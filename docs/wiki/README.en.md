@@ -8,14 +8,14 @@ These 9 `.md` files are the page sources of this datapack's GitHub Wiki; a page'
 | File | Page |
 |---|---|
 | `Home.md` | Home (one-screen quick start) |
-| `安装与升级.md` | 安装与升级 |
-| `快速上手-在游戏里改规则.md` | 快速上手 |
-| `规则字段参考.md` | 规则字段参考 |
-| `示例库.md` | 示例库 |
-| `实验性变体-v4x.md` | 实验性变体 |
+| `安装与升级.md` | Installation and Upgrade |
+| `快速上手-在游戏里改规则.md` | Quick Start |
+| `规则字段参考.md` | Rule Field Reference |
+| `示例库.md` | Example Library |
+| `实验性变体-v4x.md` | Experimental Variant |
 | `FAQ.md` | FAQ |
-| `版本与验收.md` | 版本与验收 |
-| `已知限制.md` | 已知限制 |
+| `版本与验收.md` | Versions and Acceptance |
+| `已知限制.md` | Known Limitations |
 | `_Sidebar.md` | Global sidebar (shown on every page) |
 | `_Footer.md` | Global footer (field-table authority + license) |
 
@@ -44,6 +44,6 @@ The script pushes all 9 pages up in one go (overwriting pages with the same name
 
 ## Maintenance Conventions
 
-- Cross-page links inside a page use the Wiki-native syntax `[[页面名]]`; remember to keep them in sync when renaming.
+- Cross-page links inside a page use the Wiki-native syntax `[[page name]]`; remember to keep them in sync when renaming.
 - If the field table conflicts with this repository's `src/rules/README.md`, `src/rules/README.md` prevails.
 - Every page follows the same pattern: conclusion first, then the command, then the caveats; commands go in code blocks; do not write repository-internal details.

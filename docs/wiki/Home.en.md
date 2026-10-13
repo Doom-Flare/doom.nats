@@ -21,7 +21,7 @@ By default nothing is changed, so it equals vanilla. This is a contract verified
 ## Install in Three Steps
 
 1. Unzip `doom.nats-v4.30.0.zip` to get a `doom.nats/` folder
-2. Drop the whole `doom.nats/` into `<存档>/datapacks/` (on a server: `world/datapacks/`)
+2. Drop the whole `doom.nats/` into `<save>/datapacks/` (on a server: `world/datapacks/`)
 3. Go in game and run `/reload`
 
 If this line shows up in chat, it is installed:

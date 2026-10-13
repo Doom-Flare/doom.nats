@@ -7,7 +7,7 @@ The experimental variant = the default variant + capabilities beyond vanilla (on
 ## 1. Download and Installation
 
 1. Download `dist/doom.nats-v4x-experimental-v4.30.0.zip`
-2. Unzip, put `doom.nats/` into `<存档>/datapacks/` (on a server `world/datapacks/`)
+2. Unzip, put `doom.nats/` into `<save>/datapacks/` (on a server `world/datapacks/`)
 3. Create a new world (or edit the enabled experimental gameplay in `level.dat`), and turn on the corresponding experimental gameplay switch
 4. `/reload`
 
@@ -32,8 +32,8 @@ Opening this gate means your world also takes in the corresponding vanilla chang
 | Capability | How to write it | Effect |
 |---|---|---|
 | `near` | add `when:{near:{type:"minecraft:wolf",radius:24,min:1}}` to an entry | only spawns when something is nearby (sheep appear only near a wolf pack) |
-| `on_spawn` | add `on_spawn:1b` to an entry, then create `data/doom.nats/function/exp/on_spawn/<条目 id>.mcfunction` in the datapack | spawn show: particles / sounds / announcements / extra NBT |
-| Preset packs | `/data merge storage doom.nats:exp_in {name:"<名>"}` → `/function doom.nats:exp/preset` | switch worldviews in one click: `blood_moon` / `storm_season` / `deep_dark` (a measured entry point; `exp/preset` is a no-argument macro dispatch) |
+| `on_spawn` | add `on_spawn:1b` to an entry, then create `data/doom.nats/function/exp/on_spawn/<entry id>.mcfunction` in the datapack | spawn show: particles / sounds / announcements / extra NBT |
+| Preset packs | `/data merge storage doom.nats:exp_in {name:"<name>"}` → `/function doom.nats:exp/preset` | switch worldviews in one click: `blood_moon` / `storm_season` / `deep_dark` (a measured entry point; `exp/preset` is a no-argument macro dispatch) |
 | Custom appearance (AJ bridge) | build-time rule `rules/rigs.json`; the source is there in `src/tools/gen_exp_aj.mjs` and was not released with the v4.25/v4.28/v4.29/v4.30.0 builds. This repo's `rules/rigs.json` is `{}` (0 `exp/aj` entries in the release zip); to use it you must supply your own non-empty config (sample `src/rules/examples/aj/rigs.json`), then re-run the generator with `DOOM_EXP=1` | a real entity as the core + a rig as the appearance (`ride` mounting): the core moves/despawns as usual, the appearance follows block by block |
 | Sampling from the mob in your hand | `/function doom.nats:author/add_entry` | turns the appearance of the mob in your hand (including NBT) directly into a rule |
 

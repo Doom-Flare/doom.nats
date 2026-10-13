@@ -28,7 +28,7 @@ Three possibilities, ordered by likelihood:
 ## How do I read the rejection histogram?
 
 ```
-[nats.reject] rej: 0=<抽不到区块> 1=<24格有人> 2=<出128格> 3=<光照档> 4=<落位方块> 5=<全局容量> 6=<本地容量> 7=<spawn cost> 8=<选不到物种> 9=<该生物自身规则不满足> spawned=<成功数>
+[nats.reject] rej: 0=<no valid chunk drawn> 1=<player within 24> 2=<beyond 128> 3=<light tier> 4=<landing block> 5=<global capacity> 6=<local capacity> 7=<spawn cost> 8=<no species selected> 9=<the mob's own rules not met> spawned=<successes>
 ```
 
 - `4` largest ⇒ the landing block is not recognized; extend `#doom.nats:standable` / `#doom.nats:spawnable_at` (most common on custom maps)
