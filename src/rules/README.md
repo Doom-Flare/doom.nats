@@ -1,4 +1,6 @@
 # rules/ —— 作者规则层（v4.23）
+English: `src/rules/README.en.md`
+
 
 > **默认 = 原版。** 这三个文件都是空的（`{}` / `[]` / `{}`）时，生成器走原路径，
 > 产物与"没有这一层"**逐字节一致**（由 `tools/check_static.mjs` 的 9 个生成器 `--check` 把守）。

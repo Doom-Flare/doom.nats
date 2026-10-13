@@ -1,4 +1,5 @@
 # 变更日志 · doom.nats（v4 · 原版自然生成复刻）
+English: `CHANGELOG.en.md`
 
 > 口径：本表只记 v4 线（数据包驱动复刻原版自然生成 + Circumstance 情形引擎 + 消失层）。
 > v3（复刻地图包 `早期作品线`）与 `ported/` `optimized/` 属另一条线。

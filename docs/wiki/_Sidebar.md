@@ -1,3 +1,5 @@
+English: `docs/wiki/_Sidebar.en.md`
+
 doom.nats · Wiki
 
 - [[Home]]

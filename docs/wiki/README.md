@@ -1,4 +1,5 @@
 # Wiki 源文件（9 页 + 侧栏/页脚）
+English: `docs/wiki/README.en.md`
 
 这 9 个 `.md` 就是本数据包 GitHub Wiki 的页面源，页面标题 = 文件名（去掉 `.md`）；
 `_Sidebar.md` 与 `_Footer.md` 是 GitHub Wiki 的全局侧栏与页脚（不占页面标题），推送脚本会一起带上去。

@@ -1,4 +1,5 @@
 # FAQ
+English: `docs/wiki/FAQ.en.md`
 
 ## 装了以后，原版还会自己刷怪吗？
 

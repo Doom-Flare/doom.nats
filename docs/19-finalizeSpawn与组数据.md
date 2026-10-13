@@ -1,6 +1,8 @@
 > 本文是作者向的核对记录（非玩家必读）；文中路径与数字来自本机开发环境。
 
 # 19 · finalizeSpawn、组数据与七个刷怪问题
+English: `docs/19-finalizeSpawn与组数据.en.md`
+
 
 > 一次性回答 2026-09 那轮提问，并记录 v4.15 新增的组数据层（SpawnGroupData 复刻）。
 > 所有结论都来自本机反编译源码（`doom.nats/_work/decomp/out15/`，1.21.6 named），行号可自查。

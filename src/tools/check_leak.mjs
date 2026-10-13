@@ -40,10 +40,14 @@ const SELF = ['tools/check_leak.mjs', 'doom.nats/tools/check_leak.mjs', 'src/too
 // 顶层白名单（两份 profile 分开写：玩家向仓库不许出现本机开发布局那套目录）
 // 玩家向仓库：2026-09-29 起多一个 src/ —— 用户要求"仓库还是要展示源码的"（生成器 + 规则层 + 生成器输入）
 // ports/：多版本源码树（各 MC 版本一份，玩家可对照下载）—— 2026-10-07 起在白名单内
-const ALLOW_PUB = ['README.md', 'LICENSE', 'CHANGELOG.md', '.gitignore', '.gitattributes', 'dist', 'docs', 'rules', '.github', 'src', 'doom.nats', 'ports'];
+const ALLOW_PUB = ['README.md', 'LICENSE', 'CHANGELOG.md', '.gitignore', '.gitattributes', 'dist', 'docs', 'rules', '.github', 'src', 'doom.nats', 'ports',
+  // 英文译本（与中文并列，不进发行包）
+  'README.en.md', 'CHANGELOG.en.md'];
 // 本机开发布局：**不含 src**（源码在那儿本来就以 doom.nats/ 的形式在顶层；那里加 src 只会放宽那道门）
 const ALLOW_DEV = ['README.md', 'LICENSE', 'CHANGELOG.md', 'RELEASING.md', '.gitignore', '.gitattributes', 'dist', 'docs', 'rules', '.github',
-  'doom.nats', 'tests', 'harness', '.vscode', 'AGENTS.md', '_work', 'tools', 'pack', 'reports'];
+  'doom.nats', 'tests', 'harness', '.vscode', 'AGENTS.md', '_work', 'tools', 'pack', 'reports',
+  // 英文译本（与中文并列，不进发行包）
+  'README.en.md', 'CHANGELOG.en.md'];
 // 布局：玩家向仓库里没有生成器（doom.nats/tools），但有 dist/（.github/ 放 Issue 模板，2026-09-29 起允许）
 // 布局判定：**开发仓的顶层有 _work / reports / AGENTS.md**（玩家向仓从不放这些）。
 //   旧判据是「没有 doom.nats/tools」—— 但玩家向仓现在直接放数据包本体（含 tools/ 里的少量文件）

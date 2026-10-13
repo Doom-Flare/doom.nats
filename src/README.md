@@ -1,4 +1,6 @@
 # 这是什么
+English: `src/README.en.md`
+
 
 **本包的源码**：JavaScript 生成器（把规则生成成数据包函数）+ 规则层（`rules/`）+ 生成输入（`_work/generated/`）。
 

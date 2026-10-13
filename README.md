@@ -1,4 +1,5 @@
 # doom.nats
+English: `README.en.md`
 
 用数据包复刻 Minecraft 原版的自然刷怪。容量、区块计数、光照与逐实体规则、结构覆盖、消失层都在，规则可以改。
 

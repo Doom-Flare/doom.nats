@@ -1,4 +1,6 @@
 # 文档索引（玩家向）
+English: `docs/README.en.md`
+
 
 > 数据包本体在 [`../dist/`](../dist)：解压 zip 得到 `doom.nats/` 文件夹，整个丢进 `saves/<存档>/datapacks/`（服务器 `world/datapacks/`），再进游戏 `/reload`。
 > 成品在 [`../dist/`](../dist)，源码在 [`../src/`](../src/README.md)：想改包就照 `src/README.md` 的三步构建走。
