@@ -3,7 +3,7 @@ English: `README.en.md`
 
 用数据包复刻 Minecraft 原版的自然刷怪。容量、区块计数、光照与逐实体规则、结构覆盖、消失层都在，规则可以改。
 
-[![最新版本](https://img.shields.io/github/v/release/DoomDecapitator/doom.nats?include_prereleases&label=%E6%9C%80%E6%96%B0%E7%89%88%E6%9C%AC)](https://github.com/DoomDecapitator/doom.nats/releases)
+[![最新版本](https://img.shields.io/github/v/release/Doom-Flare/doom.nats?include_prereleases&label=%E6%9C%80%E6%96%B0%E7%89%88%E6%9C%AC)](https://github.com/Doom-Flare/doom.nats/releases)
 [![Minecraft](https://img.shields.io/badge/Minecraft-1.21.5%20%E2%80%93%2026.3-3C8527)](docs/25-兼容与版本.md)
 [![许可](https://img.shields.io/badge/%E8%AE%B8%E5%8F%AF-All%20Rights%20Reserved%20%C2%B7%20Beta-c0392b)](docs/26-致谢与许可.md)
 
@@ -267,7 +267,7 @@ Get-Content dist/SHA256SUMS.txt | ForEach-Object {
 | 许可与致谢 | [docs/26-致谢与许可.md](docs/26-致谢与许可.md) |
 | 全部文档 | [docs/README.md](docs/README.md) |
 
-Wiki 图文版在 <https://github.com/DoomDecapitator/doom.nats/wiki>。打不开的话，`docs/wiki/` 里就是那 9 页的 Markdown 源。
+Wiki 图文版在 <https://github.com/Doom-Flare/doom.nats/wiki>。打不开的话，`docs/wiki/` 里就是那 9 页的 Markdown 源。
 
 ## 仓库结构
 
@@ -285,7 +285,7 @@ docs/                              玩家向文档，docs/wiki/ 是 Wiki 的 Mar
 
 ## 报问题
 
-走 [Issues](https://github.com/DoomDecapitator/doom.nats/issues/new/choose) 的表单。会问你版本、变体、`logs/latest.log` 片段和截图。按表单填能快很多。
+走 [Issues](https://github.com/Doom-Flare/doom.nats/issues/new/choose) 的表单。会问你版本、变体、`logs/latest.log` 片段和截图。按表单填能快很多。
 
 ## 许可
 

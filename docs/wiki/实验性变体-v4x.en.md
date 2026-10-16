@@ -65,4 +65,4 @@ In a thunderstorm over the deep ocean, the zombie's entrance fires lightning and
 - Do not install the default variant and the experimental variant at the same time.
 - The engine gate only recognizes the flags declared in `pack.mcmeta`; 1.21.6 has no clean switch for "datapack experiments only", so weigh it up before going in.
 
-> For the per-field table (`src/rules/rigs.json`) see [src/rules/README.md](https://github.com/DoomDecapitator/doom.nats/blob/main/src/rules/README.md).
+> For the per-field table (`src/rules/rigs.json`) see [src/rules/README.md](https://github.com/Doom-Flare/doom.nats/blob/main/src/rules/README.md).

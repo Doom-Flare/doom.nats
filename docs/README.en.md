@@ -20,7 +20,7 @@
 | [25-兼容与版本](25-兼容与版本.md) | v4.30.0 (current) | Version × variant × whether experimental gameplay is needed (see at a glance which to download) |
 | [26-致谢与许可](26-致谢与许可.md) | v4.30.0 | License summary, third-party boundaries, credits |
 | [图-首屏效果位](图-首屏效果位.md) | Documentation convention (not version-bound) | How the README hero image is shot and wired in (placeholder notes) |
-| [wiki/](wiki/) | Save snapshot (around v4.30.0) | The Wiki's 9 pages of Markdown source: Home / 安装与升级 / 快速上手 / 规则字段参考 / 示例库 / 实验性变体 / FAQ / 版本与验收 / 已知限制. Target: <https://github.com/DoomDecapitator/doom.nats/wiki> |
+| [wiki/](wiki/) | Save snapshot (around v4.30.0) | The Wiki's 9 pages of Markdown source: Home / 安装与升级 / 快速上手 / 规则字段参考 / 示例库 / 实验性变体 / FAQ / 版本与验收 / 已知限制. Target: <https://github.com/Doom-Flare/doom.nats/wiki> |
 
 > "Corresponding version" = the version at the time this document was written. The two marked "historical snapshot" haven't been updated along the way; their body text is kept as written then, and a note has been added at the top.
 > For the current state, see the [CHANGELOG](../CHANGELOG.md) and [24-玩家能改动的一切](24-玩家能改动的一切.md).

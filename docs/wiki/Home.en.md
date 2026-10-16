@@ -10,9 +10,9 @@ By default nothing is changed, so it equals vanilla. This is a contract verified
 
 | Download this | What it is | Who it suits |
 |---|---|---|
-| [doom.nats-v4.30.0.zip](https://github.com/DoomDecapitator/doom.nats/releases/download/v4.30.0/doom.nats-v4.30.0.zip) | Default variant: item-by-item replication of vanilla natural spawning | Most people (recommended) |
-| [doom.nats-v4x-experimental-v4.30.0.zip](https://github.com/DoomDecapitator/doom.nats/releases/download/v4.30.0/doom.nats-v4x-experimental-v4.30.0.zip) | Everything in the default variant + capabilities beyond vanilla (only spawn when something is nearby, spawn effects, preset packs) | People who want to play with more, and are willing to enable the matching experimental gameplay when creating the world |
-| [All downloads / checksums](https://github.com/DoomDecapitator/doom.nats/releases) | sha256 attachments of both zips | People who want to confirm the download is complete |
+| [doom.nats-v4.30.0.zip](https://github.com/Doom-Flare/doom.nats/releases/download/v4.30.0/doom.nats-v4.30.0.zip) | Default variant: item-by-item replication of vanilla natural spawning | Most people (recommended) |
+| [doom.nats-v4x-experimental-v4.30.0.zip](https://github.com/Doom-Flare/doom.nats/releases/download/v4.30.0/doom.nats-v4x-experimental-v4.30.0.zip) | Everything in the default variant + capabilities beyond vanilla (only spawn when something is nearby, spawn effects, preset packs) | People who want to play with more, and are willing to enable the matching experimental gameplay when creating the world |
+| [All downloads / checksums](https://github.com/Doom-Flare/doom.nats/releases) | sha256 attachments of both zips | People who want to confirm the download is complete |
 
 > The experimental variant carries an engine gate: if the world has not enabled the matching experimental gameplay, it will not install (not a warning). See [[实验性变体-v4x]].
 >
@@ -48,4 +48,4 @@ If this line shows up in chat, it is installed:
 - This is currently Beta (public testing): known deviations are documented one by one and are not all fixed yet. **You can install it into a save and play, but please back up the save first.**
 - License: All Rights Reserved · Beta. Personal use / playing / passing it on unchanged is fine; to republish a modified version or use it commercially, get permission first.
 
-> The source and the generators are right in this repository at [`src/`](https://github.com/DoomDecapitator/doom.nats/tree/main/src); the real-hardware test bench and the round-by-round acceptance reports are not distributed with this repository. This repository holds only what players need.
+> The source and the generators are right in this repository at [`src/`](https://github.com/Doom-Flare/doom.nats/tree/main/src); the real-hardware test bench and the round-by-round acceptance reports are not distributed with this repository. This repository holds only what players need.

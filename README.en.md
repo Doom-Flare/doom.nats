@@ -4,7 +4,7 @@
 
 Replicating Minecraft's vanilla natural spawning with a datapack. Mob caps, chunk counts, light and per-entity rules, structure overrides, and the despawn layer are all here — and the rules are editable.
 
-[![Latest release](https://img.shields.io/github/v/release/DoomDecapitator/doom.nats?include_prereleases&label=%E6%9C%80%E6%96%B0%E7%89%88%E6%9C%AC)](https://github.com/DoomDecapitator/doom.nats/releases)
+[![Latest release](https://img.shields.io/github/v/release/Doom-Flare/doom.nats?include_prereleases&label=%E6%9C%80%E6%96%B0%E7%89%88%E6%9C%AC)](https://github.com/Doom-Flare/doom.nats/releases)
 [![Minecraft](https://img.shields.io/badge/Minecraft-1.21.5%20%E2%80%93%2026.3-3C8527)](docs/25-兼容与版本.md)
 [![License](https://img.shields.io/badge/%E8%AE%B8%E5%8F%AF-All%20Rights%20Reserved%20%C2%B7%20Beta-c0392b)](docs/26-致谢与许可.md)
 
@@ -268,7 +268,7 @@ The real-hardware test bench, round-by-round acceptance reports, and CI live on 
 | License and credits | [docs/26-致谢与许可.md](docs/26-致谢与许可.md) |
 | All documentation | [docs/README.md](docs/README.md) |
 
-The illustrated Wiki is at <https://github.com/DoomDecapitator/doom.nats/wiki>. If it won't open, `docs/wiki/` holds the Markdown source of those 9 pages.
+The illustrated Wiki is at <https://github.com/Doom-Flare/doom.nats/wiki>. If it won't open, `docs/wiki/` holds the Markdown source of those 9 pages.
 
 ## Repository Layout
 
@@ -286,7 +286,7 @@ docs/                              Player-facing docs; docs/wiki/ is the Wiki's 
 
 ## Reporting Issues
 
-Use the [Issues](https://github.com/DoomDecapitator/doom.nats/issues/new/choose) forms. They'll ask for your version, variant, a `logs/latest.log` snippet, and screenshots. Filling out the form properly speeds things up a lot.
+Use the [Issues](https://github.com/Doom-Flare/doom.nats/issues/new/choose) forms. They'll ask for your version, variant, a `logs/latest.log` snippet, and screenshots. Filling out the form properly speeds things up a lot.
 
 ## License
 

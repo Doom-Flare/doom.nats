@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        提之前先看一眼 [24-玩家能改动的一切](https://github.com/DoomDecapitator/doom.nats/blob/main/docs/24-玩家能改动的一切.md)：
+        提之前先看一眼 [24-玩家能改动的一切](https://github.com/Doom-Flare/doom.nats/blob/main/docs/24-玩家能改动的一切.md)：
         **很多需求现在就能改**（运行时刻 storage 立刻生效，不用重装包）。如果那里已经能实现，直接说"想要更省事的写法"也完全可以。
 
   - type: textarea

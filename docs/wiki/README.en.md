@@ -19,7 +19,7 @@ These 9 `.md` files are the page sources of this datapack's GitHub Wiki; a page'
 | `_Sidebar.md` | Global sidebar (shown on every page) |
 | `_Footer.md` | Global footer (field-table authority + license) |
 
-Target address: <https://github.com/DoomDecapitator/doom.nats/wiki>
+Target address: <https://github.com/Doom-Flare/doom.nats/wiki>
 
 ## Why the Content Lives Here
 
@@ -29,7 +29,7 @@ So the content ships with the repository as Markdown sources first, and you pick
 
 ### Route A: Paste in the web UI (zero dependencies, 9 times)
 
-Go to <https://github.com/DoomDecapitator/doom.nats/wiki>, click Create the first page (create the home page, set the title to `Home`, the body can just be saved for now), then for each further page use New Page to create a page with the same name and paste the corresponding `.md` content in whole and save.
+Go to <https://github.com/Doom-Flare/doom.nats/wiki>, click Create the first page (create the home page, set the title to `Home`, the body can just be saved for now), then for each further page use New Page to create a page with the same name and paste the corresponding `.md` content in whole and save.
 
 ### Route B: Push with a script (do the first step of Route A once first)
 

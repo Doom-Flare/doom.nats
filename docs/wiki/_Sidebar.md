@@ -14,5 +14,5 @@ doom.nats · Wiki
 
 ---
 
-- [下载（Releases）](https://github.com/DoomDecapitator/doom.nats/releases)
-- [仓库 README](https://github.com/DoomDecapitator/doom.nats)
+- [下载（Releases）](https://github.com/Doom-Flare/doom.nats/releases)
+- [仓库 README](https://github.com/Doom-Flare/doom.nats)

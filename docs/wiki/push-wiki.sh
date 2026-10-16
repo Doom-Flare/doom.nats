@@ -3,7 +3,7 @@
 # 前置条件：仓库的 Wiki 已存在（网页上点过一次 Create first page）。
 set -euo pipefail
 
-OWNER=DoomDecapitator
+OWNER=Doom-Flare
 REPO=doom.nats
 WIKI="https://github.com/${OWNER}/${REPO}.wiki.git"
 HERE=$(cd "$(dirname "$0")" && pwd)

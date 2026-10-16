@@ -10,9 +10,9 @@ English: `docs/wiki/Home.en.md`
 
 | 下载这个 | 它是什么 | 适合谁 |
 |---|---|---|
-| [doom.nats-v4.30.0.zip](https://github.com/DoomDecapitator/doom.nats/releases/download/v4.30.0/doom.nats-v4.30.0.zip) | 默认变体：逐条复刻原版自然生成 | 绝大多数人（推荐） |
-| [doom.nats-v4x-experimental-v4.30.0.zip](https://github.com/DoomDecapitator/doom.nats/releases/download/v4.30.0/doom.nats-v4x-experimental-v4.30.0.zip) | 默认变体的全部内容 + 超出原版的能力（附近有谁才刷、出生特效、预设包） | 想玩花样，又愿意在建世界时开启对应实验性玩法的人 |
-| [全部下载 / 校验值](https://github.com/DoomDecapitator/doom.nats/releases) | 两个 zip 的 sha256 附件 | 想确认下载完整的人 |
+| [doom.nats-v4.30.0.zip](https://github.com/Doom-Flare/doom.nats/releases/download/v4.30.0/doom.nats-v4.30.0.zip) | 默认变体：逐条复刻原版自然生成 | 绝大多数人（推荐） |
+| [doom.nats-v4x-experimental-v4.30.0.zip](https://github.com/Doom-Flare/doom.nats/releases/download/v4.30.0/doom.nats-v4x-experimental-v4.30.0.zip) | 默认变体的全部内容 + 超出原版的能力（附近有谁才刷、出生特效、预设包） | 想玩花样，又愿意在建世界时开启对应实验性玩法的人 |
+| [全部下载 / 校验值](https://github.com/Doom-Flare/doom.nats/releases) | 两个 zip 的 sha256 附件 | 想确认下载完整的人 |
 
 > 实验性变体带引擎门：世界没开对应实验性玩法就装不上（不是警告）。详见 [[实验性变体-v4x]]。
 >
@@ -48,4 +48,4 @@ English: `docs/wiki/Home.en.md`
 - 当前是 Beta（公测）：已知偏差逐条留档，还没修完。**可以装进存档玩，但请先备份存档。**
 - 许可：All Rights Reserved · Beta。可自用 / 游玩 / 原样转发；二次发布修改版或商用请先取得许可。
 
-> 源码与生成器就在本仓库 [`src/`](https://github.com/DoomDecapitator/doom.nats/tree/main/src)；真机测试台与逐轮验收报告不随本仓库分发。本仓库只放玩家要的东西。
+> 源码与生成器就在本仓库 [`src/`](https://github.com/Doom-Flare/doom.nats/tree/main/src)；真机测试台与逐轮验收报告不随本仓库分发。本仓库只放玩家要的东西。

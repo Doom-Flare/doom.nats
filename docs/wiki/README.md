@@ -18,7 +18,7 @@ English: `docs/wiki/README.en.md`
 | `_Sidebar.md` | 全局侧栏（每页都显示） |
 | `_Footer.md` | 全局页脚（字段表口径 + 许可） |
 
-目标地址：<https://github.com/DoomDecapitator/doom.nats/wiki>
+目标地址：<https://github.com/Doom-Flare/doom.nats/wiki>
 
 ## 为什么内容放在这里
 
@@ -28,7 +28,7 @@ GitHub 的 Wiki 有一个平台限制：仓库必须先有一个 Wiki 页面，`
 
 ### 路线 A：网页粘贴（零依赖，9 次）
 
-到 <https://github.com/DoomDecapitator/doom.nats/wiki>，点 Create the first page（新建首页，标题填 `Home`，正文可以随便先存一下），之后每页用 New Page 建同名页面，把对应 `.md` 内容整段粘进去保存。
+到 <https://github.com/Doom-Flare/doom.nats/wiki>，点 Create the first page（新建首页，标题填 `Home`，正文可以随便先存一下），之后每页用 New Page 建同名页面，把对应 `.md` 内容整段粘进去保存。
 
 ### 路线 B：脚本推送（先做一次路线 A 的第一步）
 

@@ -9,7 +9,7 @@ body:
         先谢谢你来报问题 🙏 这份表单要的四样东西（版本、变体、日志、截图）是定位问题的全部线索 ——
         缺哪样都可能让排查原地打转。**能让世界复现的最小步骤**最值钱。
 
-        报之前顺手看一眼：[已知限制](https://github.com/DoomDecapitator/doom.nats/blob/main/docs/wiki/已知限制.md) 与 [FAQ](https://github.com/DoomDecapitator/doom.nats/blob/main/docs/wiki/FAQ.md)。
+        报之前顺手看一眼：[已知限制](https://github.com/Doom-Flare/doom.nats/blob/main/docs/wiki/已知限制.md) 与 [FAQ](https://github.com/Doom-Flare/doom.nats/blob/main/docs/wiki/FAQ.md)。
 
   - type: input
     id: pack_version
