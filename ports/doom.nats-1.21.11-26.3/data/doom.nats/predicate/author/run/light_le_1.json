@@ -1,8 +1,0 @@
-{
-  "type": "minecraft:location_check",
-  "predicate": {
-    "light": {
-      "max": 1
-    }
-  }
-}
