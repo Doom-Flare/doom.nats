@@ -13,6 +13,80 @@
 
 ---
 
+## v4.30.1 · the 26.3 package's `pack.mcmeta` is back to its true values — 2026-10-24
+
+> Metadata only, no behavior change: `data/` is untouched byte for byte, and all five range packages' mcfunction / JSON are identical to v4.30.0.
+> What changed is the `pack.mcmeta` inside `doom.nats-v4.30.0-mc26.3.zip`: it claimed `pack_format 94` / `min_format [94,1]` / `max_format 121`,
+> while 26.3's real `pack_format` is **121**, and 26.3 is hard-incompatible with ≤26.2 (see below). This ships as a PATCH because the artifacts changed.
+
+### 1 · What was wrong
+
+The 2026-10-05 erratum (after v4.29-multiversion) split `-mc1.21.11-26.3` into `-mc1.21.11-26.2` and `-mc26.3`,
+but only the zip **contents** were rebuilt; the `pack.mcmeta` in the `ports/` tree and the `VARIANTS` table that generates it stayed in the pre-split shape:
+
+| Item | v4.30.0's `-mc26.3` | Corrected in v4.30.1 |
+|---|---|---|
+| `pack_format` | 94 | **121** |
+| `min_format` | `[94, 1]` | `[121, 0]` |
+| `max_format` | `121` | `[121, 0]` |
+| Version string in `description` | `[v4 · 1.21.11–26.3 · …]` | `[v4 · 26.3 · …]` |
+| `ports/` directory | `ports/doom.nats-1.21.11-26.3/` | `ports/doom.nats-26.3/` |
+
+For reference: v4.29's `-mc26.3` package was already `121 / [121,0] / [121,0]` — the mislabel came in with the v4.30.0 rebuild.
+
+### 2 · Why this had to be fixed
+
+26.3 and ≤26.2 have a renamed `predicate` registry key (`condition` → `type`), and the two are **hard-incompatible in both directions**, asymmetrically:
+
+| Wrong-way install | Result |
+|---|---|
+| ≤26.2 package → 26.3 server | Won't even start: `IllegalStateException: No key type in MapLike[{"condition":…}]` → `Registry Loading` fails |
+| 26.3 package → ≤26.2 server | Starts and plays, but **all 68 predicates silently break** (`Failed to parse either. First: No key condition in MapLike[{"type":…}]`), and the self-test drops from 14 to 13 — miss `total` and you'd call it a pass |
+
+So declaring 94 on the 26.3 package tells 1.21.11–26.2 players "this fits you too".
+It won't be refused — it will quietly break a large slice of the rules. That direction **does more damage than a hard refusal**, so the lower bound has to be 121.
+
+### 3 · What changed
+
+| File | Change |
+|---|---|
+| `ports/doom.nats-26.3/` | Added (700 files), produced by the rebuild script, including the hand-written `mcdoc/doom.nats/config.mcdoc` |
+| `ports/doom.nats-1.21.11-26.3/` | Removed (700 files); that directory only existed in the v4.29 / v4.30.0 generations |
+| `dist/doom.nats-v4.30.1-mc26.3.zip` | Rebuilt, 576944 B; unzipped against v4.30.0's same-named package: 700 vs 700 files, the only difference is `doom.nats/pack.mcmeta` |
+| The other 6 zips | Renamed only (`v4.30.0` → `v4.30.1`), sha256 identical bit for bit |
+| `dist/SHA256SUMS.txt` | 26 lines; seven new `v4.30.1` entries, and 2 retired packages are left out of the list (their files stay in `dist/`, same as the v4.29 erratum) |
+
+### 4 · Documentation fixed along the way
+
+- `docs/25-兼容与版本.md` / `.en.md`: the 26.3 row's `pack_format` in the matrix, 94 → **121** (the only wrong cell in that matrix; the README version table was always right)
+- `docs/18-配置手册.md` / `.en.md`: the experimental artifact's entry count, 771 → **777** (measured)
+- Every "current version" reference across the repo: `v4.30.0` → `v4.30.1` (README download and version tables, docs index, the tag segment of the wiki download links, each manual's `dist/` reference, the `src/README` file-count table, the credits footer)
+- Historical prose is untouched: the v4.30.0 CHANGELOG section, the `v4.25/v4.28/v4.29/v4.30.0` enumerations, and the version history table in `docs/wiki/版本与验收`
+
+### 5 · The Four Gates
+
+| Gate | Result |
+|---|---|
+| Static gate (default + experimental) | 0 error / 2 warning |
+| Zero load-time failures | 26.3 on a real server: `load errors = 0` |
+| Real-hardware assertions | 26.3 on a real server: `pass=14 fail=0 total=14` |
+| zip byte-identical to the pack tree | The new 26.3 zip matches `ports/doom.nats-26.3` file by file |
+| sha256 alignment | Local, `SHA256SUMS.txt`, and the Release attachment agree |
+
+> The other 4 range packages and the baseline package were **not** re-run through the matrix: `data/` is unchanged, their contents are byte-identical to v4.30.0, and v4.30.0's all-green 12-version result still holds.
+
+### 6 · Deliverables
+
+| File | Applicable versions |
+|---|---|
+| `doom.nats-v4.30.1.zip` | 1.21.6 (baseline) |
+| `doom.nats-v4.30.1-mc1.21.5.zip` | 1.21.5 |
+| `doom.nats-v4.30.1-mc1.21.6-1.21.8.zip` | 1.21.6 to 1.21.8 |
+| `doom.nats-v4.30.1-mc1.21.9-1.21.10.zip` | 1.21.9 to 1.21.10 |
+| `doom.nats-v4.30.1-mc1.21.11-26.2.zip` | 1.21.11 to 26.2 |
+| `doom.nats-v4.30.1-mc26.3.zip` | 26.3 |
+| `doom.nats-v4x-experimental-v4.30.1.zip` | Experimental variant |
+
 ## v4.30.0 · Quantity Tiers (scale) — 2026-10-07
 
 > This version adds a set of quantity knobs: no rule changes, no species changes, only "how many can spawn at most".

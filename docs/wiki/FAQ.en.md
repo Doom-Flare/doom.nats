@@ -14,8 +14,8 @@ Only natural spawning is turned off. Spawners, structure generation, breeding, c
 
 ## Do I need to enable experimental gameplay?
 
-The default variant does not (`doom.nats-v4.30.0.zip`).
-Only the experimental variant does (`doom.nats-v4x-experimental-v4.30.0.zip`), and it must be enabled when creating the world, otherwise the pack is refused at load. See [[实验性变体-v4x]].
+The default variant does not (`doom.nats-v4.30.1.zip`).
+Only the experimental variant does (`doom.nats-v4x-experimental-v4.30.1.zip`), and it must be enabled when creating the world, otherwise the pack is refused at load. See [[实验性变体-v4x]].
 
 ## In singleplayer, standing still, why does nothing spawn?
 
