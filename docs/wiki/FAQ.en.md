@@ -138,15 +138,15 @@ After thawing you should see `$snap.chunks=289`, `$cap.monster=70`. Then run `/f
 The two most common traps:
 
 1. `weight`'s real measure is `weight / 1000000`; writing `40` equals not spawning, you must fill in hundred-thousand-scale values (see the "⚠ `weight`'s real measure" section of [[规则字段参考]]).
-2. The "leftovers" of the entry path: at runtime an entry does not load the selected species' vanilla `place`/`light`/`rule`/`tall`, and these `$sel.*` values carry over the values left by the last vanilla draw:
+2. The entry path's species rules: since v4.32 `core/setup` loads the `mob/load` registry and `author/entry_rule` writes the chosen species' whole `rule`/`place`/`light`/`tag`/`tall` set into `$sel`, so `$sel.rule` is that species' true value; only entities outside the roster (`minecraft:allay`, `minecraft:phantom`, …) have no registry entry and fall back to `rule=0 place=1 light=0 tag=0 cluster=1`. To see what was written:
 
 ```
 /data get storage doom.nats:sel        # check whether rule / tall / place / light are what you expect
 ```
 
-`entityRules` can only pin the two items `place`/`light`. `rule`/`tall` have no corresponding author field and cannot be changed at runtime (only at build time by changing `rules/`).
-The leftovers are usually inert: in the measured "ghost window" (no override) they are `rule=12` / `tall=1` (enderman leftovers), and `rule 12` has no match at all among all 38 lines of `check/entity` ⇒ harmless.
-The two specific values to watch are `11` and `28`: if the landing vanilla table leaves `$sel.rule` as `11` (drowned, requiring water underfoot) or `28` (slime), it will silently reject your target mob. All you see in the rejection reasons is `reason=9` ("the mob's own rules are not satisfied"), which looks like "the pack is broken". This is most easily hit after changing biome / changing dimension.
+`entityRules` can pin `place`/`light`/`yMin`/`yMax`/`lightMin`/`lightMax`/`weather`/`biomeIn`/`biomeNot`/`belowAny`/`persist`; `tag`/`cluster` still require build time (`rules/entity-rules.json`).
+`place: "any"` releases both the `tag` gate and the `belowSurface` height gate ⇒ to get bats/parrots spawning in the air above the player, `entityRules:{"minecraft:bat":{"place":"any"}}` is enough (measured: player at y=200, band 205–225, 199 bats in 90 seconds).
+⚠ Only v4.31 and earlier had leftovers: nothing loaded the registry then, so if the landing vanilla table left `$sel.rule` as `11` (drowned, requiring water underfoot) or `28` (slime) it would silently reject your target mob, and all you saw was `reason=9`. Fixed in v4.32 — that paragraph no longer applies after upgrading.
 
 ## What can I change and what can I not change?
 

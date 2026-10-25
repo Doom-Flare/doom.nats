@@ -434,7 +434,7 @@ execute if score $s24.x ${NS} matches ..2303 run function ${NS}:check/fail {reas
   rows.push('# ---- 实体专属下方标签（vanilla 原标签，只列出本包用到的）');
   const tagsUsed = [...new Set(RULES.rules.map((r) => r.tagId).filter(Boolean))].sort((a, b) => a - b);
   for (const id of tagsUsed) {
-    rows.push(F4('if score $sel.tag ' + NS + ' matches ' + id + ' unless block ~ ~-1 ~ #' + BELOW_TAGS[id - 1]));
+    rows.push(F4('if score $sel.tag ' + NS + ' matches ' + id + ' unless score $sel.place ' + NS + ' matches 1 unless block ~ ~-1 ~ #' + BELOW_TAGS[id - 1]));
   }
   F['data/' + NS + '/function/check/block.mcfunction'] = rows.join(LF) + LF;
 }
@@ -538,7 +538,9 @@ scoreboard players operation $cost.sum ${NS} += $cost.n ${NS}
       rows.push('execute ' + K + 'unless block ~ ~1 ~ minecraft:lava unless block ~ ~1 ~ minecraft:air run function ' + NS + ':check/fail {reason:9}');
     }
     // 蝙蝠：必须低于地表（近似：不高于玩家所在层）
-    if (r.belowSurface) rows.push(rule(id, 'if score $py ' + NS + ' > $snap.py ' + NS) + NS + ':check/fail {reason:9}');
+    // v4.32：与 tag 门同理 —— place=1（无落位限制）时不再卡这条高度门，否则 autor 层写 place:"any" 对 roster 内
+    //        物种（蝙蝠 rule=3）依然刷不到玩家上方，tag 门放行也白放。默认 place=4 ⇒ 原版路径零变化。
+    if (r.belowSurface) rows.push(rule(id, 'if score $py ' + NS + ' > $snap.py ' + NS + ' unless score $sel.place ' + NS + ' matches 1') + NS + ':check/fail {reason:9}');
     // 史莱姆：群系白名单 + 50<y<70（50% 与月相已在 coins 里）
     if (r.biome === 'slime') {
       rows.push(rule(id, 'unless predicate ' + NS + ':spawn/biome_slime') + NS + ':check/fail {reason:9}');

@@ -7,6 +7,7 @@ tellraw @s [{"text":"[4] 组大小随 Y：","color":"yellow"},{"text":"{type:\"m
 tellraw @s [{"text":"[5] 容量随 Y：","color":"yellow"},{"text":"{category:\"monster\",yMax:0,max:200,localMax:140} + doom.nats:author/set_cap_y","color":"gray"}]
 tellraw @s [{"text":"[6] 看/导出/重置：","color":"yellow"},{"text":"function doom.nats:author/show · export · reset","color":"gray"}]
 tellraw @s [{"text":"字段（entityRules）：belowAny(≤8) yMin yMax lightMin lightMax weather(thunder|rain|clear) biomeIn(≤4) biomeNot(≤4) place light persist","color":"white"}]
+tellraw @s [{"text":"提示：place 写 any 表示无落位限制，会同时放行 tag 门与高度门 ⇒ 蝙蝠/鹦鹉等也能在空中生成；写 ground 或 below_tag 则走原版落位。","color":"white"}]
 tellraw @s [{"text":"字段（entries）：id mob biome category weight min max nbt when{thundering raining yMin yMax lightMin lightMax}","color":"white"}]
 tellraw @s [{"text":"⚠ weight：条件成立时每次尝试被选中概率 ≈ weight/1000000 —— 要真刷出来就填 10 万级（40 ⇒ 0.004%，等于永远不刷；100000 ⇒ 10%）。多条目同时成立按声明顺序吃区间。","color":"gold"}]
 tellraw @s [{"text":"上限：条目 ≤8 · Y 段 ≤8 · 落位面标签 ≤8 · 群系白/黑名单各 ≤4。未列出的构建期字段（coins/cluster/deep…）请在 rules/ 里改。","color":"dark_gray"}]

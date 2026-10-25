@@ -5,7 +5,7 @@
 #       function doom.nats:author/add_entry
 # 整条条目按原样追加（与 rules/entries.json 同构）⇒ 缺的字段由判定层补默认值。
 execute unless data storage doom.nats:author entries run data modify storage doom.nats:author entries set value []
-execute if data storage doom.nats:author entries[8] run tellraw @s [{"text":"条目已满（上限 8 条）","color":"red"}]
-$execute unless data storage doom.nats:author entries[8] run data modify storage doom.nats:author entries append value $(entry)
+execute if data storage doom.nats:author entries[7] run tellraw @s [{"text":"条目已满（上限 8 条）","color":"red"}]
+$execute unless data storage doom.nats:author entries[7] run data modify storage doom.nats:author entries append value $(entry)
 say [nats.author] add_entry 已写入（改 storage 即刻生效）
 

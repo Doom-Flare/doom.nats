@@ -193,8 +193,11 @@ export function buildLayer(cfg) {
     '#       function ' + NS + ':' + dir + '/add_entry',
     '# 整条条目按原样追加（与 rules/entries.json 同构）⇒ 缺的字段由判定层补默认值。',
     'execute unless data storage ' + storage + ' entries run data modify storage ' + storage + ' entries set value []',
-    'execute if data storage ' + storage + ' entries[' + CAP_TAGS + '] run tellraw @s [{"text":"条目已满（上限 ' + CAP_TAGS + ' 条）","color":"red"}]',
-    '$execute unless data storage ' + storage + ' entries[' + CAP_TAGS + '] run data modify storage ' + storage + ' entries append value $(entry)',
+    // 上限判定读「最后一格的索引」而不是「长度」：entries[CAP_TAGS-1] 存在 ⇒ 已满 CAP_TAGS 条。
+    // v4.32 修正：旧写法两行都判 entries[CAP_TAGS]，结果第 CAP_TAGS+1 条照样能 append 进去，
+    //   而 entry_scan_<cat> 只枚举 entries[0..CAP_TAGS-1] ⇒ 多出来的那条永不生效且不报错。
+    'execute if data storage ' + storage + ' entries[' + (CAP_TAGS - 1) + '] run tellraw @s [{"text":"条目已满（上限 ' + CAP_TAGS + ' 条）","color":"red"}]',
+    '$execute unless data storage ' + storage + ' entries[' + (CAP_TAGS - 1) + '] run data modify storage ' + storage + ' entries append value $(entry)',
     'say [nats.' + dir + '] add_entry 已写入（改 storage 即刻生效）',
     '',
   );
@@ -225,6 +228,7 @@ export function buildLayer(cfg) {
     'tellraw @s [{"text":"[5] 容量随 Y：","color":"yellow"},{"text":"{category:\\"monster\\",yMax:0,max:200,localMax:140} + ' + NS + ':' + dir + '/set_cap_y","color":"gray"}]',
     'tellraw @s [{"text":"[6] 看/导出/重置：","color":"yellow"},{"text":"function ' + NS + ':' + dir + '/show · export · reset","color":"gray"}]',
     'tellraw @s [{"text":"字段（entityRules）：belowAny(≤8) yMin yMax lightMin lightMax weather(thunder|rain|clear) biomeIn(≤4) biomeNot(≤4) place light persist","color":"white"}]',
+    'tellraw @s [{"text":"提示：place 写 any 表示无落位限制，会同时放行 tag 门与高度门 ⇒ 蝙蝠/鹦鹉等也能在空中生成；写 ground 或 below_tag 则走原版落位。","color":"white"}]',
     'tellraw @s [{"text":"字段（entries）：id mob biome category weight min max nbt when{thundering raining yMin yMax lightMin lightMax}","color":"white"}]',
     'tellraw @s [{"text":"⚠ weight：条件成立时每次尝试被选中概率 ≈ weight/1000000 —— 要真刷出来就填 10 万级（40 ⇒ 0.004%，等于永远不刷；100000 ⇒ 10%）。多条目同时成立按声明顺序吃区间。","color":"gold"}]',
     'tellraw @s [{"text":"上限：条目 ≤8 · Y 段 ≤8 · 落位面标签 ≤8 · 群系白/黑名单各 ≤4。未列出的构建期字段（coins/cluster/deep…）请在 rules/ 里改。","color":"dark_gray"}]',
@@ -478,6 +482,18 @@ export function buildLayer(cfg) {
     '$data modify storage ' + NS + ':sel nbt set value {Tags:["' + NS + '.spawned","' + NS + '.cat.$(cat)","' + tagPrefix + '$(id)"]}',
     'scoreboard players set $sel.ok ' + NS + ' 1',
     'scoreboard players set ' + S + '.hit ' + NS + ' 1',
+    // v4.32：先给 $sel 的九个规则位打「无限制」默认值，再由 entry_rule 用注册表真值覆盖。
+    //   为什么必须有：旧的 entry_rule 只对注册表内物种生效，roster 外的实体（如 minecraft:allay）
+    //   九个 $sel.* 会沿用**上一只香草抽取**留下的残值 —— 残值恰好偏严时表现为「条目怎么都刷不出来」。
+    'scoreboard players set $sel.rule ' + NS + ' 0',
+    'scoreboard players set $sel.place ' + NS + ' 1',
+    'scoreboard players set $sel.light ' + NS + ' 0',
+    'scoreboard players set $sel.tag ' + NS + ' 0',
+    'scoreboard players set $sel.grp1 ' + NS + ' 0',
+    'scoreboard players set $sel.cluster ' + NS + ' 1',
+    'scoreboard players set $sel.wide ' + NS + ' 0',
+    'scoreboard players set $sel.wide2 ' + NS + ' 0',
+    'scoreboard players set $sel.tall ' + NS + ' 0',
     ...(exp ? ['execute if data storage ' + RT + ' e.hook run scoreboard players set ' + S + '.hook ' + NS + ' 1'] : []),
     'data modify storage ' + RT + ' hit set from storage ' + RT + ' e',
     'function ' + NS + ':' + dir + '/lookup',
@@ -498,7 +514,7 @@ export function buildLayer(cfg) {
   F[FUNC + 'entry_rule.mcfunction'] = [
     '# ' + NS + ':' + dir + '/entry_rule [MACRO] —— 把注册表里的原版规则数据搬到 $sel（rule/place/light/tag/grp1/cluster/wide…）',
     '# 用法：function ' + NS + ':' + dir + '/entry_rule with storage ' + RT + ':e（e.slug 已由 lookup 写好）',
-    '$data modify storage ' + RT + ' e.rt set from storage ' + NS + ':mobs."$(slug)".rt',
+    '$data modify storage ' + RT + ' e.rt set from storage ' + NS + ':mobs "$(slug)".rt',
     'execute store result score $sel.rule ' + NS + ' run data get storage ' + RT + ' e.rt.rule',
     'execute store result score $sel.place ' + NS + ' run data get storage ' + RT + ' e.rt.place',
     'execute store result score $sel.light ' + NS + ' run data get storage ' + RT + ' e.rt.light',

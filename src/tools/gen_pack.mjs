@@ -90,6 +90,10 @@ function ${NS}:despawn/setup
 function ${NS}:circ/load
 function ${NS}:circ/snapshot
 
+# v4.32 修正：生物注册表必须随包装载。此前 mob/load 全包无任何调用者，
+#   新世界/新装包时 doom.nats:mobs 为空 ⇒ author/entry_rule 取不到源 ⇒ 条目的 rule/tag/wide 沿用残值。
+function ${NS}:mob/load
+
 # v4.24 运行时刻作者层：装载（默认空 = 静默；玩家改完 storage 也可以手动再跑一次）
 function ${NS}:author/load${PKG.EXP ? `
 # v4.24 实验性层（只有实验性变体才有这些函数）：装载 + 总览

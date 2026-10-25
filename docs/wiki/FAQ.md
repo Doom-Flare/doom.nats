@@ -137,15 +137,15 @@ $snap.chunks = 0   ⇒   $cap.monster = 0   ⇒   每次尝试都 reason=5（全
 两个最常见的坑：
 
 1. `weight` 的真实口径是 `weight / 1000000`，写 `40` 等于不刷，要填 10 万级（见 [[规则字段参考]] 的「⚠ `weight` 的真实口径」）。
-2. 条目路径的“残留”：运行时刻条目不装载被选物种的原版 `place`/`light`/`rule`/`tall`，这几个 `$sel.*` 会沿用上一次香草抽取留下的值：
+2. 条目路径的物种规则：v4.32 起 `core/setup` 装载了 `mob/load` 注册表，`author/entry_rule` 会把被选物种的 `rule`/`place`/`light`/`tag`/`tall` 整套写进 `$sel`，所以 `$sel.rule` 就是该物种的真值；只有 roster 之外的实体（`minecraft:allay`、`minecraft:phantom` 等）没有注册表条目，落回 `rule=0 place=1 light=0 tag=0 cluster=1`。看看当时写进去的是什么：
 
 ```
 /data get storage doom.nats:sel        # 看 rule / tall / place / light 是不是你期望的
 ```
 
-`entityRules` 只能钉 `place`/`light` 两项。`rule`/`tall` 没有对应的 author 字段，运行时刻改不了（只能构建期改 `rules/`）。
-残留多数时候是惰性的：实测“幽灵窗口”（无 override）下是 `rule=12` / `tall=1`（末影人残值），而 `rule 12` 在 `check/entity` 全 38 行里没有任何匹配 ⇒ 无害。
-要盯住的两个具体值是 `11` 和 `28`：落点香草表若把 `$sel.rule` 留成 `11`（溺尸，要求脚下是水）或 `28`（史莱姆），它就会把你的目标怪无声拒掉。归因里只看到 `reason=9`（“该生物自身规则不满足”），看着像“包坏了”。换群系 / 换维度后最容易撞上。
+`entityRules` 能钉的是 `place`/`light`/`yMin`/`yMax`/`lightMin`/`lightMax`/`weather`/`biomeIn`/`biomeNot`/`belowAny`/`persist`；`tag`/`cluster` 仍只能构建期改（`rules/entity-rules.json`）。
+`place: "any"` 会同时放行 `tag` 门与 `belowSurface` 高度门 ⇒ 想让蝙蝠/鹦鹉在玩家上方的空中生成，写 `entityRules:{"minecraft:bat":{"place":"any"}}` 就够（真机实测：玩家 y=200、band 205–225、90 秒生成 199 只）。
+⚠ 只有 v4.31 及更早的版本存在“残留值”：那时注册表没有调用者，落点香草表若把 `$sel.rule` 留成 `11`（溺尸，要求脚下是水）或 `28`（史莱姆），就会把你的目标怪无声拒掉，归因里只看到 `reason=9`。v4.32 已修，升级后这段不再适用。
 
 ## 我能改什么、不能改什么？
 

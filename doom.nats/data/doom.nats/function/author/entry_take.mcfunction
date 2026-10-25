@@ -7,6 +7,15 @@ $data merge storage doom.nats:sel {type:"$(mob)",cat:"$(cat)",min:$(min),max:$(m
 $data modify storage doom.nats:sel nbt set value {Tags:["doom.nats.spawned","doom.nats.cat.$(cat)","doom.nats.author.$(id)"]}
 scoreboard players set $sel.ok doom.nats 1
 scoreboard players set $auth.hit doom.nats 1
+scoreboard players set $sel.rule doom.nats 0
+scoreboard players set $sel.place doom.nats 1
+scoreboard players set $sel.light doom.nats 0
+scoreboard players set $sel.tag doom.nats 0
+scoreboard players set $sel.grp1 doom.nats 0
+scoreboard players set $sel.cluster doom.nats 1
+scoreboard players set $sel.wide doom.nats 0
+scoreboard players set $sel.wide2 doom.nats 0
+scoreboard players set $sel.tall doom.nats 0
 data modify storage doom.nats:author_rt hit set from storage doom.nats:author_rt e
 function doom.nats:author/lookup
 execute if data storage doom.nats:author_rt e.slug run function doom.nats:author/entry_rule with storage doom.nats:author_rt e

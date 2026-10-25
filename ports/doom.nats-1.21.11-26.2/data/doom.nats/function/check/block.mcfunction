@@ -83,15 +83,15 @@ execute if score $sel.wide2 doom.nats matches 1 unless block ~ ~ ~-2 #doom.nats:
 execute if score $sel.tall doom.nats matches 1 unless block ~ ~2 ~ #doom.nats:spawnable_at run function doom.nats:check/fail {reason:4}
 
 # ---- 实体专属下方标签（vanilla 原标签，只列出本包用到的）
-execute if score $sel.tag doom.nats matches 1 unless block ~ ~-1 ~ #minecraft:animals_spawnable_on run function doom.nats:check/fail {reason:4}
-execute if score $sel.tag doom.nats matches 2 unless block ~ ~-1 ~ #minecraft:foxes_spawnable_on run function doom.nats:check/fail {reason:4}
-execute if score $sel.tag doom.nats matches 3 unless block ~ ~-1 ~ #minecraft:rabbits_spawnable_on run function doom.nats:check/fail {reason:4}
-execute if score $sel.tag doom.nats matches 4 unless block ~ ~-1 ~ #minecraft:wolves_spawnable_on run function doom.nats:check/fail {reason:4}
-execute if score $sel.tag doom.nats matches 5 unless block ~ ~-1 ~ #minecraft:goats_spawnable_on run function doom.nats:check/fail {reason:4}
-execute if score $sel.tag doom.nats matches 7 unless block ~ ~-1 ~ #minecraft:armadillo_spawnable_on run function doom.nats:check/fail {reason:4}
-execute if score $sel.tag doom.nats matches 8 unless block ~ ~-1 ~ #minecraft:parrots_spawnable_on run function doom.nats:check/fail {reason:4}
-execute if score $sel.tag doom.nats matches 9 unless block ~ ~-1 ~ #minecraft:frogs_spawnable_on run function doom.nats:check/fail {reason:4}
-execute if score $sel.tag doom.nats matches 10 unless block ~ ~-1 ~ #minecraft:mooshrooms_spawnable_on run function doom.nats:check/fail {reason:4}
-execute if score $sel.tag doom.nats matches 11 unless block ~ ~-1 ~ #minecraft:axolotls_spawnable_on run function doom.nats:check/fail {reason:4}
-execute if score $sel.tag doom.nats matches 12 unless block ~ ~-1 ~ #minecraft:bats_spawnable_on run function doom.nats:check/fail {reason:4}
-execute if score $sel.tag doom.nats matches 14 unless block ~ ~-1 ~ #minecraft:sand run function doom.nats:check/fail {reason:4}
+execute if score $sel.tag doom.nats matches 1 unless score $sel.place doom.nats matches 1 unless block ~ ~-1 ~ #minecraft:animals_spawnable_on run function doom.nats:check/fail {reason:4}
+execute if score $sel.tag doom.nats matches 2 unless score $sel.place doom.nats matches 1 unless block ~ ~-1 ~ #minecraft:foxes_spawnable_on run function doom.nats:check/fail {reason:4}
+execute if score $sel.tag doom.nats matches 3 unless score $sel.place doom.nats matches 1 unless block ~ ~-1 ~ #minecraft:rabbits_spawnable_on run function doom.nats:check/fail {reason:4}
+execute if score $sel.tag doom.nats matches 4 unless score $sel.place doom.nats matches 1 unless block ~ ~-1 ~ #minecraft:wolves_spawnable_on run function doom.nats:check/fail {reason:4}
+execute if score $sel.tag doom.nats matches 5 unless score $sel.place doom.nats matches 1 unless block ~ ~-1 ~ #minecraft:goats_spawnable_on run function doom.nats:check/fail {reason:4}
+execute if score $sel.tag doom.nats matches 7 unless score $sel.place doom.nats matches 1 unless block ~ ~-1 ~ #minecraft:armadillo_spawnable_on run function doom.nats:check/fail {reason:4}
+execute if score $sel.tag doom.nats matches 8 unless score $sel.place doom.nats matches 1 unless block ~ ~-1 ~ #minecraft:parrots_spawnable_on run function doom.nats:check/fail {reason:4}
+execute if score $sel.tag doom.nats matches 9 unless score $sel.place doom.nats matches 1 unless block ~ ~-1 ~ #minecraft:frogs_spawnable_on run function doom.nats:check/fail {reason:4}
+execute if score $sel.tag doom.nats matches 10 unless score $sel.place doom.nats matches 1 unless block ~ ~-1 ~ #minecraft:mooshrooms_spawnable_on run function doom.nats:check/fail {reason:4}
+execute if score $sel.tag doom.nats matches 11 unless score $sel.place doom.nats matches 1 unless block ~ ~-1 ~ #minecraft:axolotls_spawnable_on run function doom.nats:check/fail {reason:4}
+execute if score $sel.tag doom.nats matches 12 unless score $sel.place doom.nats matches 1 unless block ~ ~-1 ~ #minecraft:bats_spawnable_on run function doom.nats:check/fail {reason:4}
+execute if score $sel.tag doom.nats matches 14 unless score $sel.place doom.nats matches 1 unless block ~ ~-1 ~ #minecraft:sand run function doom.nats:check/fail {reason:4}

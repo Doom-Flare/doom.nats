@@ -1,5 +1,5 @@
 # doom.nats:mob/load —— 生物注册表装载（由 tools/gen_mobs.mjs 从 vanilla 数据生成，勿手改）
-# 取用：function doom.nats:spawn/one with storage doom.nats:mobs <id>
+# 取用：由 core/setup 装载；运行时刻读法见 author/entry_rule（storage doom.nats:mobs "<slug>".rt）
 # 条目 = { type, nbt }：type 为实体 id（宏替换时字符串不带引号插入），nbt 为生成时的实体 NBT。
 
 data modify storage doom.nats:mobs minecraft:armadillo set value {type:"minecraft:armadillo",rule:1,rt:{rule:1,place:4,light:2,tag:7,grp1:0,cluster:4,wide:0,wide2:0,tall:0},nbt:{Tags:["doom.nats.spawned","doom.nats.cat.creature"]}}

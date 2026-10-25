@@ -1,6 +1,6 @@
 # doom.nats:author/entry_rule [MACRO] —— 把注册表里的原版规则数据搬到 $sel（rule/place/light/tag/grp1/cluster/wide…）
 # 用法：function doom.nats:author/entry_rule with storage doom.nats:author_rt:e（e.slug 已由 lookup 写好）
-$data modify storage doom.nats:author_rt e.rt set from storage doom.nats:mobs."$(slug)".rt
+$data modify storage doom.nats:author_rt e.rt set from storage doom.nats:mobs "$(slug)".rt
 execute store result score $sel.rule doom.nats run data get storage doom.nats:author_rt e.rt.rule
 execute store result score $sel.place doom.nats run data get storage doom.nats:author_rt e.rt.place
 execute store result score $sel.light doom.nats run data get storage doom.nats:author_rt e.rt.light

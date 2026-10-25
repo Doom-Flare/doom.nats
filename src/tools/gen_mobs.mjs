@@ -117,7 +117,7 @@ function authorWeightLines(biome, cat) {
 {
   const rows = [
     '# ' + NS + ':mob/load —— 生物注册表装载（由 tools/gen_mobs.mjs 从 vanilla 数据生成，勿手改）',
-    '# 取用：function ' + NS + ':spawn/one with storage ' + NS + ':mobs <id>',
+    '# 取用：由 core/setup 装载；运行时刻读法见 author/entry_rule（storage ' + NS + ':mobs "<slug>".rt）',
     '# 条目 = { type, nbt }：type 为实体 id（宏替换时字符串不带引号插入），nbt 为生成时的实体 NBT。',
     '',
   ];

@@ -10,10 +10,16 @@
 //   L5 带 `$` 前缀的函数必须真的被 `with` 调用（否则等于死代码）
 //   L6 位置参数里的 `~` 拼写（`~-32` 合法、`~--32` 非法）
 //   L7 宏占位符语法：只认 $(name)，${name} 不会被替换（静默失效）
+//   L8 `execute if biome` 必须带坐标（少坐标 ⇒ Expected integer ⇒ 整函数加载失败）
+//   L9 mcfunction 只允许整行 `#` 注释（行尾 `# ` 会被当成参数）
+//   L10 相对坐标只能写 ~N / ~-N（`~+N` ⇒ 整条命令失败）
 //   L11 命令中不得出现连续两个空格（Brigadier 直接报 Incorrect argument ⇒ 整个函数加载失败；真机实测）
 //   L12 宏行（`$` 开头）必须含至少一个 `$(name)`（否则整函数加载失败：No variables in macro）
 //   L13 产物里不得出现裸 `undefined`/`NaN`（模板把 JS 值漏进命令 ⇒ Expected integer ⇒ 整函数加载失败；真机实测）
 //   L14 群系类别分发必须显式设置 $catid（单类别群系会沿用上一个群系的值）
+//   L16 `storage <id>` 与其后的路径引号段之间不得缺空格（`storage ns:mobs."$(x)".rt` 这种写法 ⇒
+//       Brigadier 报 Expected whitespace to end one argument ⇒ 整条命令执行期失败；且源路径取不到时
+//       目标也不会被写 ⇒ 下游读到上一次的残值，不刷红字，极难排查（v4.25–v4.31 的 author/entry_rule 即此）
 //   L15 容量计数写入点闭合：凡被 $cnt.$(cat) 读到的类别，主世界/下界/末地三个维度都必须有 set + add 写入点
 //       （缺一个 ⇒ 该维度恒读 0 ⇒ 容量门形同不存在；v4.26 前的 4 个水生类别就是这么静默失效的）
 import fs from 'node:fs';
@@ -71,6 +77,13 @@ for (const p of all) {
     //   （只查引号之外的：字符串参数里的空格是合法的，如 tellraw 的 "text")
     const unquoted = body.replace(/"(?:\\.|[^"\\])*"/g, '""').replace(/'(?:\\.|[^'\\])*'/g, "''");
     if (/[^ ] {2,}[^ ]/.test(unquoted)) add('ERROR', r, '命令含连续两个空格（Brigadier 会拒绝整条命令）：' + body.slice(0, 60));
+    // L16 storage 的 id 与紧跟其后的路径引号段之间缺空格：`storage doom.nats:mobs."$(slug)".rt`
+    //     正确写法 `storage doom.nats:mobs "$(slug)".rt`（id 与路径之间必须有空白）。
+    //     为什么单列一条：加载期不报错、只在执行期报 Expected whitespace；且 store/modify 失败是静默的
+    //     （源取不到 ⇒ 目标不写）⇒ 表现为下游读到陈旧值，不刷任何红字。
+    if (/(?:^|\s)storage\s+[a-z0-9_.-]+:[a-z0-9_/.-]+\.?"/.test(body)) {
+      add('ERROR', r, 'storage 的 id 与路径引号段之间缺空格（整条命令会执行期失败）：' + body.slice(0, 70));
+    }
     // L7 占位符语法：Minecraft 只认 $(name)，写 ${name} 不会被替换 ⇒ 命令解析失败
     //    （v4 曾 9 处写成 ${...}，导致整包一次都不刷怪、且没有任何报错可见）
     const bad = /\$\{[A-Za-z0-9_]+\}/.exec(line);

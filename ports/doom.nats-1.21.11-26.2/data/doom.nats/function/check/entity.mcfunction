@@ -4,7 +4,7 @@
 # 与 _work/ref/spawn-rules-digest.txt（44 条谓词的源码速览）
 
 execute if score $sel.rule doom.nats matches 3 run function doom.nats:check/coin_half
-execute if score $sel.rule doom.nats matches 3 if score $py doom.nats > $snap.py doom.nats run function doom.nats:check/fail {reason:9}
+execute if score $sel.rule doom.nats matches 3 if score $py doom.nats > $snap.py doom.nats unless score $sel.place doom.nats matches 1 run function doom.nats:check/fail {reason:9}
 execute if score $sel.rule doom.nats matches 8 if predicate doom.nats:spawn/biome_river run function doom.nats:check/coin_1of50
 execute if score $sel.rule doom.nats matches 8 unless entity @a[gamemode=!spectator,distance=..64] run function doom.nats:check/fail {reason:2}
 execute if score $sel.rule doom.nats matches 11 unless block ~ ~-1 ~ #doom.nats:water_fluid run function doom.nats:check/fail {reason:9}
