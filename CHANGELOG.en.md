@@ -13,6 +13,106 @@
 
 ---
 
+## v4.31.0 · Two missing checks in air spawning, and a gate that could never hit zero — 2026-10-25
+
+> All three changes sit on the geometry and the cadence of the spawn chain: the distance gate ignored categories, the anchor followed the player's height, and the passive-mob 400-tick gate could never reach zero.
+> After the fix, with the player hovering at y=200 and everything else unchanged, the same 90-second window goes from 0 to **5259** successful spawns (with `creatureGate` set to 1 to exercise the creature channel alone).
+> Also fixed: `mode/off` claimed to retire the pack, but the pack kept summoning.
+> And the experimental variant had been stuck on a stale build (776 files, 5 functions missing and 8 files regressed); it is rebuilt to 781 here.
+
+### 1 · What was wrong
+
+None of these are in the rule layer; all three are preconditions for "should this spawn at this point at all".
+
+| # | Location | Old behavior | Vanilla semantics | Consequence |
+|---|---|---|---|---|
+| ① | `check/distance` | one flat 128-block cap for every category | `despawnDistance` is **per category** (`WATER_AMBIENT` = 64, the other six = 128), and `canSpawnFarFromPlayer()` (= `CREATURE` \|\| `MISC`) skips the check entirely | passive mobs got an invented 128-block ceiling; `water_ambient` was allowed out to 128 where vanilla says 64 |
+| ② | `pos/band` mode 0 | y anchored on **the player's height**, scanning dy = +2 .. −16 | `NaturalSpawner.getRandomPosWithin`: `y = random(level.getMinY(), chunk.getHeight(WORLD_SURFACE, x, z) + 1)` — completely independent of the player's height | with the player high up the whole window is air; probes measured a 100% fallback rate and a 1–3% placement hit rate |
+| ③ | `core/creature_tick` | `gametime % 400` sampled once per 20 ticks, inside `circ/snapshot` | `getGameTime() % 400 == 0` checked every tick | `gametime` advances by 1, sampling advances by 20 ⇒ the phase is frozen and `$gt` ranges over exactly `{17, 37, 57, …, 397}`, **never 0** ⇒ not a single passive mob ever spawns |
+
+### 2 · Why all three had to be fixed together
+
+They mask each other; fixing one alone shows no measurable effect:
+
+- Fix ③ only: `$gt` reaches 0, but candidate points still hang off the player's height — spawning works on the ground and is still zero in the air.
+- Fix ② only: the anchor moves to the surface, but the passive channel is still stuck behind a gate that never opens — placement is right, the category roll never picks it.
+- Fix ① only: `water_ambient` distances align, passive mobs still do not spawn.
+
+On-hardware comparison (superflat, vanilla spawning disabled with `doMobSpawning=false`, noon, `creatureGate=1`):
+
+| Player y | Before: Δ`$spawned.total` in 90 s | After |
+|---|---|---|
+| 200 (hovering) | 0 | **+5259** |
+| 64 | 0 | +76 |
+| −60 (on the ground) | 0 | +61 |
+
+After the fix the cliff edge at y=200 is gone too: the old build dropped to 0 from y=68 up, the new one spawns anywhere from 64 to 200.
+
+### 3 · What changed
+
+| File | Change |
+|---|---|
+| `check/distance` | Rewritten to 14 lines: the 24-block gate is unchanged → default `$chk.dist = 128` → `check/dist_pick` reads `$cfg.dist_<cat>` per category → **`creature` is exempt** and only the rest go through `check/dist_gate` |
+| `check/dist_pick` | **New** (macro, `with storage doom.nats:sel`): reads the bound for `$(cat)` out of `$cfg.dist_<cat>` |
+| `check/dist_gate` | **New** (macro, `with storage doom.nats:dg`): `unless entity @a[gamemode=!spectator,distance=..$(dist)]` ⇒ `check/fail {reason:2}` |
+| `pos/band_surface` | **New**: when mode 0's first pass finds nothing, `positioned over motion_blocking_no_leaves` moves the anchor to that column's surface |
+| `pos/band_surface_at` | **New**: reads the surface y back through a temporary marker (no command writes the execution position into a scoreboard), taking over only when `$band.sy < $py` |
+| `pos/band_surface_scan` | **New**: the 19-layer scan anchored on the surface; on a hit it converts the offset to an absolute y and writes it to `$py` |
+| `pos/band` | 231 → 280 lines (generator-side): the 19 scan lines became reusable `anchorLines`, and mode 0 now calls `pos/band_surface` |
+| `core/creature_tick` | Called every tick now; the gate became a window `$eff.period` wide — `$gt.now = gametime % $cfg.creature_gate` → `$gt = $gt.now - $eff.period` → negative means open, `0..` means closed |
+| `core/tick` | `function doom.nats:core/creature_tick` added right after `add $t` (it used to live in `circ/snapshot`) |
+| `circ/snapshot` | Lost the `creature_tick` call and the `$creature_gate` copy (that variable is read nowhere in the pack) |
+| `src/tools/gen_{check,pack,pos,spawn}.mjs` | Synced with all five artifacts above |
+
+The gate is a window rather than an equality check on purpose: the spawn tick at `$spawn_t % $eff.period == 0` need not land on the exact tick where `gametime % 400 == 0`, and an equality gate would drop the whole cycle. The window is `period` wide (default 5), so 5 consecutive ticks are open every 400.
+
+> ★ The order of the two gate lines must not be swapped: inside the window `$gt` comes out negative, and clamping it to 0 first means the `0..` check immediately closes the gate (measured on hardware: `$gt` stuck at 1 forever). Close first (`0..` → 1), then open (`..-1` → 0).
+
+### 4 · `mode/off` now really retires the pack
+
+`mode/off` used to only clear mobs and hand `doMobSpawning` back to vanilla, **with no stop flag at all**, while `spawn/batch` inside `core/tick` had no mode gate — so the pack kept summoning after `mode/off`. The docs (16 / 21 / 24 / 25 and the wiki install page) all describe it as retiring the pack; the code did not.
+
+| Item | Change |
+|---|---|
+| New stop flag | `$mode.off` (scoreboard `doom.nats`) |
+| `core/tick` | Returns from the whole function right after `add $t`; `$t` keeps counting (the minute settlement in `ctrl/settle` depends on it), and nothing else runs: no spawning, no snapshot, no capacity scan, no despawn |
+| `mode/off` | Sets `$mode.off = 1` |
+| `mode/survival` | Sets `$mode.off = 0` (`mode/auto` reuses survival and therefore unlocks too) |
+| `core/setup` | Auto-takeover on load now requires `unless $mode.manual` **and** `unless $mode.off` — otherwise `/reload` flips `doMobSpawning` back to false while `core/tick` is still returning, leaving neither vanilla nor the pack spawning |
+
+On hardware (1.21.10): after `mode/off`, `$mode.off=1`, `doMobSpawning=true`, `$spawn_t` reads a constant 2 across samples (frozen), and `$t` still climbs; after `/reload` it is still frozen and `doMobSpawning` is still true; both `mode/survival` and `mode/auto` unlock it and restore the cadence.
+
+### 5 · Along the way: the experimental variant had drifted
+
+`pack/doom.nats-experimental` had **been sitting on a previous generation**: 776 files, and of the 704 files it shares with the default variant **251 differ** — `core/creature_tick` was 4 lines (the old build), `mode/off` 5 lines, `core/tick` 32 lines, none of them carrying this version's three fixes or the stop flag. Under `DOOM_EXP=1` four generators reported drift outright.
+
+After the rebuild it is **781 files** (+5, −0, 8 modified), the `exp/*` layer is still the same 77 files, and all 12 generators report a clean `--check`.
+
+### 6 · The Four Gates
+
+| Gate | Result |
+|---|---|
+| Generators agree | `gen_pack` / `gen_pos` / `gen_check` / `gen_spawn` plus the other 8: `--check` clean for both the default and the experimental build |
+| Static gate | **0 error / 2 warning** on both (the pre-existing "macro line without a with call" warnings in `check/fail` and `debug/light_fail`) |
+| Leak gate | 0 hits |
+| 12-version matrix | **12/12 `pass=14 fail=0 total=14`**: 1.21.5 / 1.21.6 / 1.21.7 / 1.21.8 / 1.21.9 / 1.21.10 / 1.21.11 / 26.1 / 26.1.1 / 26.1.2 / 26.2 / 26.3, zero load errors each, 28–32 s per version |
+| On-hardware spawning | Default settings agree across `$cnt.creature` and `@e[type=#doom.nats:creature]`; with `cap.creature` raised to 200 the pack spawned 96 in 120 s and the field held 106 (sheep 20 / cow 12 / pig 28 / chicken 26 / horse 17 / donkey 3), and the entity NBT carries `doom.nats.cat.creature` `doom.nats.near128` `doom.nats.spawned` |
+
+> Measuring note: `$spawned.total` feeds the minute settlement in `ctrl/settle`, so a short-window delta may not match what actually spawned. Read `$cnt.creature` or count entities instead.
+
+### 7 · Deliverables
+
+| File | Applicable versions | Entries |
+|---|---|---|
+| `doom.nats-v4.31.0.zip` | 1.21.6 (baseline) | 705 |
+| `doom.nats-v4.31.0-mc1.21.5.zip` | 1.21.5 | 705 |
+| `doom.nats-v4.31.0-mc1.21.6-1.21.8.zip` | 1.21.6 to 1.21.8 | 705 |
+| `doom.nats-v4.31.0-mc1.21.9-1.21.10.zip` | 1.21.9 to 1.21.10 | 705 |
+| `doom.nats-v4.31.0-mc1.21.11-26.2.zip` | 1.21.11 to 26.2 | 705 |
+| `doom.nats-v4.31.0-mc26.3.zip` | 26.3 | 705 |
+| `doom.nats-v4x-experimental-v4.31.0.zip` | Experimental variant | 781 |
+
+Every package is byte-identical to its `ports/` directory (the baseline package to `pack/doom.nats` plus `mcdoc/`).
 ## v4.30.1 · the 26.3 package's `pack.mcmeta` is back to its true values — 2026-10-24
 
 > Metadata only, no behavior change: `data/` is untouched byte for byte, and all five range packages' mcfunction / JSON are identical to v4.30.0.

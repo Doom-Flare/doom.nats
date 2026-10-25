@@ -224,10 +224,45 @@ ${capScanBlock}
 `;
 
 // ---- 每一步：失败写 reason 并短路 ----
+// v4.31 修（空中/高空零生成）：
+//   旧实现把 despawnDistance 硬编码成 128，且不分实体类别 —— 原版这条只对
+//   !type.canSpawnFarFromPlayer() 的实体生效，而 EntityType.Builder:1655 把
+//   canSpawnFarFromPlayer 设为 (category == CREATURE || MISC) ⇒ **creature 整条豁免**。
+//   真机实测（超平坦，玩家钉在 y=64/66/67/68）：生成数 75/56/24/0，断崖精确卡在 128 —— 玩家离地
+//   128 格后地表一个候选点都过不了这道门，于是「空中不生成」。修完 creature 不再被它挡住。
+//   顺带接上 $cfg.dist_<cat>：这项配置从 v4.x 起就写进记分板却全包 0 处读（死配置），文档
+//   docs/18-配置手册「distance.* = 128（water_ambient 为 64）」与实现不符。
+F['data/' + NS + '/function/check/dist_pick.mcfunction'] = `# ${NS}:check/dist_pick [MACRO] —— 按类别取 despawnDistance 上界
+#
+# 原版 MobCategory 第 5 个构造参数：WATER_AMBIENT = 64，其余 6 类 = 128。
+# 值来自 $cfg.dist_<cat>（cfg/apply 从 cfg_defaults.distance 拷入，可被 config.distance 覆盖）。
+# 未知类别或配置缺失（持有者无分）时保持调用方预置的 128。
+# 用法：function ${NS}:check/dist_pick with storage ${NS}:sel
+\$execute if score \$cfg.dist_\$(cat) ${NS} matches 1.. run scoreboard players operation \$chk.dist ${NS} = \$cfg.dist_\$(cat) ${NS}
+`;
+
+F['data/' + NS + '/function/check/dist_gate.mcfunction'] = `# ${NS}:check/dist_gate [MACRO] —— despawnDistance 上界（reason=2）
+#
+# 语义同原版 NaturalSpawner.isValidSpawnPostitionForType 的第 2 个分支：
+#   !canSpawnFarFromPlayer() && nearestPlayerDistanceSqr > despawnDistance² ⇒ 拒
+# 参数 $(dist) 由 check/distance 按类别取好后经 storage ${NS}:dg 传入。
+# 用法：function ${NS}:check/dist_gate with storage ${NS}:dg
+\$execute unless entity @a[gamemode=!spectator,distance=..\$(dist)] run function ${NS}:check/fail {reason:2}
+`;
+
 F['data/' + NS + '/function/check/distance.mcfunction'] = `# ${NS}:check/distance —— 距离判定（reason=1 / 2 / 10）
-# 24 格球内不得有玩家（源码：distSq <= 576 拒）；24 格之外、despawnDistance 之内才可生成
+# 24 格球内不得有玩家（源码：distSq <= 576 拒）
 execute if entity @a[gamemode=!spectator,distance=..24] run function ${NS}:check/fail {reason:1}
-execute unless entity @a[gamemode=!spectator,distance=..128] run function ${NS}:check/fail {reason:2}
+# despawnDistance 上界（源码：!canSpawnFarFromPlayer() && d² > despawnDistance² ⇒ 拒）
+#   canSpawnFarFromPlayer = (category == CREATURE || MISC)（EntityType.Builder:1655）
+#   ⇒ **creature 整条豁免**：原版牛/羊/猪/鸡在 260 格外照样生成，这里同样不设上界。
+#   其余类别按各自 despawnDistance 判（water_ambient=64，其他=128），取 $cfg.dist_<cat>。
+#   v4.31 前这里是硬编码 distance=..128 且不分类别 ⇒ 玩家离地 128 格后地表候选点全被拒（空中零生成）。
+scoreboard players set $chk.dist ${NS} 128
+execute if score $chk.ok ${NS} matches 1 run function ${NS}:check/dist_pick with storage ${NS}:sel
+execute if score $chk.ok ${NS} matches 1 if score $chk.dist ${NS} matches 1.. unless data storage ${NS}:sel {cat:"creature"} run execute store result storage ${NS}:dg dist int 1 run scoreboard players get $chk.dist ${NS}
+execute if score $chk.ok ${NS} matches 1 if score $chk.dist ${NS} matches 1.. unless data storage ${NS}:sel {cat:"creature"} run function ${NS}:check/dist_gate with storage ${NS}:dg
+data remove storage ${NS}:dg dist
 # 世界出生点 24 格内同样不得生成（源码同一条 if 的第二个分支；$cfg.spawn24≥1 且作者声明了坐标才生效）
 execute if score $chk.ok ${NS} matches 1 if score $cfg.spawn24 ${NS} matches 1.. run function ${NS}:check/spawn24
 `;

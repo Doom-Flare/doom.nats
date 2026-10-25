@@ -16,11 +16,11 @@ Check your MC version first.
 
 | Your version | Download this |
 |---|---|
-| 1.21.5 | `dist/doom.nats-v4.30.1-mc1.21.5.zip` |
-| 1.21.6 / 1.21.7 / 1.21.8 | `dist/doom.nats-v4.30.1-mc1.21.6-1.21.8.zip` |
-| 1.21.9 / 1.21.10 | `dist/doom.nats-v4.30.1-mc1.21.9-1.21.10.zip` |
-| 1.21.11 to 26.2 | `dist/doom.nats-v4.30.1-mc1.21.11-26.2.zip` |
-| 26.3 | `dist/doom.nats-v4.30.1-mc26.3.zip` |
+| 1.21.5 | `dist/doom.nats-v4.31.0-mc1.21.5.zip` |
+| 1.21.6 / 1.21.7 / 1.21.8 | `dist/doom.nats-v4.31.0-mc1.21.6-1.21.8.zip` |
+| 1.21.9 / 1.21.10 | `dist/doom.nats-v4.31.0-mc1.21.9-1.21.10.zip` |
+| 1.21.11 to 26.2 | `dist/doom.nats-v4.31.0-mc1.21.11-26.2.zip` |
+| 26.3 | `dist/doom.nats-v4.31.0-mc26.3.zip` |
 
 The companion files are worth installing alongside; they don't vary by version:
 
@@ -29,7 +29,7 @@ The companion files are worth installing alongside; they don't vary by version:
 | `dist/doom.log-multi.zip` | Log channel. Without it, you can't see why the pack failed |
 | `dist/doom.nats-selftest.zip` | Self-assertion suite. One command tells you whether the pack is working |
 
-There's also an experimental variant, `dist/doom.nats-v4x-experimental-v4.30.1.zip`, which adds `near` (only spawn when certain things are nearby), `on_spawn` (spawn effects), and a few presets. To install it you must enable the matching experimental gameplay when creating the world, otherwise the pack is refused at load. See [Experimental Variant](docs/wiki/实验性变体-v4x.md).
+There's also an experimental variant, `dist/doom.nats-v4x-experimental-v4.31.0.zip`, which adds `near` (only spawn when certain things are nearby), `on_spawn` (spawn effects), and a few presets. To install it you must enable the matching experimental gameplay when creating the world, otherwise the pack is refused at load. See [Experimental Variant](docs/wiki/实验性变体-v4x.md).
 
 Install only one of the packages. They share the same namespace, and two copies overwrite each other.
 
@@ -227,12 +227,12 @@ All `OK` means the download is intact; a `MISMATCH` means download again.
 
 | MC version | data pack version | Package | `min_format` / `max_format` |
 |---|---|---|---|
-| 1.21.5 | 71 | `doom.nats-v4.30.1-mc1.21.5.zip` | `[71,0]` to `[71,0]` |
-| 1.21.6 | 80 | `doom.nats-v4.30.1-mc1.21.6-1.21.8.zip` | `[80,0]` to `81` |
+| 1.21.5 | 71 | `doom.nats-v4.31.0-mc1.21.5.zip` | `[71,0]` to `[71,0]` |
+| 1.21.6 | 80 | `doom.nats-v4.31.0-mc1.21.6-1.21.8.zip` | `[80,0]` to `81` |
 | 1.21.7 / 1.21.8 | 81 | Same as above | `[80,0]` to `81` |
-| 1.21.9 / 1.21.10 | 88.0 | `doom.nats-v4.30.1-mc1.21.9-1.21.10.zip` | `[88,0]` to `[88,0]` |
-| 1.21.11 to 26.2 | 94.1 to 107.0 | `doom.nats-v4.30.1-mc1.21.11-26.2.zip` | `[94,1]` to `[107,0]` |
-| 26.3 | 121.0 | `doom.nats-v4.30.1-mc26.3.zip` | `[121,0]` to `[121,0]` |
+| 1.21.9 / 1.21.10 | 88.0 | `doom.nats-v4.31.0-mc1.21.9-1.21.10.zip` | `[88,0]` to `[88,0]` |
+| 1.21.11 to 26.2 | 94.1 to 107.0 | `doom.nats-v4.31.0-mc1.21.11-26.2.zip` | `[94,1]` to `[107,0]` |
+| 26.3 | 121.0 | `doom.nats-v4.31.0-mc26.3.zip` | `[121,0]` to `[121,0]` |
 
 All five packages share the same function logic; the only differences are `pack.mcmeta` and a few version-related rewrites (`chain` renamed to `iron_chain`, the gamerule `doMobSpawning` renamed to `spawn_mobs`, and the predicate `condition` changed to `type`). `ports/` holds the source tree of each package for file-by-file comparison.
 

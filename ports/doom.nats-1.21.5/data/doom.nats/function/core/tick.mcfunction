@@ -1,5 +1,13 @@
 # doom.nats:core/tick —— 每 tick
 scoreboard players add $t doom.nats 1
+# ★ 退场锁（v4.31）：mode/off 之后本包必须真的停手 —— v4.30.1 及更早没有这道门，
+#   跑完 mode/off 仍在 spawn/batch 里 summon，与文档声称的「退场」不符。
+#   $t 照旧递增（ctrl/settle 的分钟结算靠它），其余整函数 return：不刷怪、不跑快照/容量扫描/despawn。
+#   解锁：mode/survival 或 mode/auto 把 $mode.off 置 0（core/setup 也只在未退场时自动接管）。
+execute if score $mode.off doom.nats matches 1 run return 0
+# v4.31 P0 修：被动生物节拍从 circ/snapshot（每 20 tick）挪到每 tick —— 旧的采样相位固定，
+#   `gametime % 400` 永远取不到 0（真机实测恒落在 {17,37,57,…,397}），creature 全程不生成。
+function doom.nats:core/creature_tick
 
 # 快照节拍：默认 20 tick 一次（$snap_period 可覆盖）
 execute unless score $snap_period doom.nats matches 1.. run scoreboard players set $snap_period doom.nats 20

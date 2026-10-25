@@ -12,6 +12,107 @@ English: `CHANGELOG.en.md`
 
 ---
 
+## v4.31.0 · 空中生成的两个漏写 + 被动生物永不为零的门 — 2026-10-25
+
+> 三处改动都在生成链的几何与节拍上：距离门不分类别、锚点跟着玩家高度、被动生物的 400 tick 门永远取不到 0。
+> 修完之后，玩家飞在 y=200 的天空里、同条件下从 0 只变成 90 秒 5259 次成功生成（把 `creatureGate` 设为 1 单独验证 creature 通道）。
+> 另修一条"文档一直在声称、代码一直没做"的：`mode/off` 退场之后本包仍在刷怪。
+> 实验性变体此前长期停在旧产物上（776 文件，比默认变体少 5 个函数、8 个文件内容退化），这一版一并重建到 781。
+
+### 1 · 错在哪
+
+三条都不在规则层，全在"这次该不该在这一点生成"的三道前置上。
+
+| # | 位置 | 原写法 | 原版语义 | 后果 |
+|---|---|---|---|---|
+| ① | `check/distance` | 所有类别一律卡 128 格 | `despawnDistance` **按类别**取值（`WATER_AMBIENT` = 64，其余 6 类 = 128），且 `canSpawnFarFromPlayer()`（= `CREATURE` \|\| `MISC`）整条豁免 | 被动生物被凭空多加了 128 格上界；`water_ambient` 该 64 却按 128 放行 |
+| ② | `pos/band` 模式 0 | y 锚在**玩家高度**，向下扫 dy = +2 .. −16 | `NaturalSpawner.getRandomPosWithin`：`y = random(level.getMinY(), chunk.getHeight(WORLD_SURFACE, x, z) + 1)` —— 与玩家高度**完全无关** | 玩家飞在高空时整窗都是空气，探针实测回退率 100%、落位命中率 1–3% |
+| ③ | `core/creature_tick` | 只在 `circ/snapshot`（每 20 tick）里采样一次 `gametime % 400` | `getGameTime() % 400 == 0` 每 tick 判一次 | `gametime` 步进 1、采样步进 20 ⇒ 相位固定，`$gt` 的值域恰是 `{17, 37, 57, …, 397}` 这 20 个数，**永远取不到 0** ⇒ 被动生物一条都不生成 |
+
+### 2 · 为什么这三条必须一起修
+
+它们互相掩盖，单修一条量不出效果：
+
+- 只修 ③：`$gt` 会进 0 了，但候选点还锚在玩家高度 —— 玩家站在地面时能刷，飞起来仍然是 0。
+- 只修 ②：锚点搬到地表了，但被动生物的通道还卡在永不开启的门上 —— 落位对了，类别抽签抽不到。
+- 只修 ①：`water_ambient` 的距离口径对齐了，被动生物照样不生成。
+
+真机对照（超平坦、`doMobSpawning=false` 关掉原版刷怪、午间、`creatureGate=1`）：
+
+| 玩家 y | 修复前 90 秒 Δ`$spawned.total` | 修复后 |
+|---|---|---|
+| 200（悬空） | 0 | **+5259** |
+| 64 | 0 | +76 |
+| −60（地面） | 0 | +61 |
+
+修复后在 y=200 上的断崖也消失了：旧版 y=68 起就是 0，新版 64→200 全程可生成。
+
+### 3 · 改了什么
+
+| 文件 | 改动 |
+|---|---|
+| `check/distance` | 重写为 14 行：24 格门不变 → 默认 `$chk.dist = 128` → `check/dist_pick` 按类别取 `$cfg.dist_<cat>` → **`creature` 豁免**才继续走 `check/dist_gate` |
+| `check/dist_pick` | **新增**（宏，`with storage doom.nats:sel`）：按 `$(cat)` 从 `$cfg.dist_<cat>` 取上界 |
+| `check/dist_gate` | **新增**（宏，`with storage doom.nats:dg`）：`unless entity @a[gamemode=!spectator,distance=..$(dist)]` ⇒ `check/fail {reason:2}` |
+| `pos/band_surface` | **新增**：模式 0 第一步扫不到时，用 `positioned over motion_blocking_no_leaves` 把锚点搬到该列地表 |
+| `pos/band_surface_at` | **新增**：借一个临时 marker 读回地表 y（命令没有"把执行位置写进记分板"的形式），只在 `$band.sy < $py` 时接管 |
+| `pos/band_surface_scan` | **新增**：以地表为锚点的 19 层扫描，命中后把偏移换算成绝对 y 写回 `$py` |
+| `pos/band` | 231 → 280 行（生成器口径）：19 条扫描行拆成可复用的 `anchorLines`，模式 0 接上 `pos/band_surface` |
+| `core/creature_tick` | 改为每 tick 调用；门做成 `$eff.period` 宽窗口 —— `$gt.now = gametime % $cfg.creature_gate` → `$gt = $gt.now - $eff.period` → 负数判开、`0..` 判关 |
+| `core/tick` | 在 `add $t` 之后加 `function doom.nats:core/creature_tick`（原在 `circ/snapshot` 里） |
+| `circ/snapshot` | 去掉 `creature_tick` 调用与 `$creature_gate` 拷贝（该变量全包 0 处读取） |
+| `src/tools/gen_{check,pack,pos,spawn}.mjs` | 同步上述五处产物 |
+
+门做成"窗口"而不是"等值"是有意的：`$spawn_t % $eff.period == 0` 的生成拍未必落在 `gametime % 400 == 0` 那一刻，等值门会漏掉整个周期。窗口宽度 = `period`（默认 5），每 400 tick 有连续 5 个 tick 门是开的。
+
+> ★ 门判的两行顺序不能换：窗口内的 `$gt` 会被算成负数，先归 0 再判 `0..` 就永远关门（真机实测 `$gt` 恒为 1）。必须先判关门（`0..` → 1），再判开门（`..-1` → 0）。
+
+### 4 · `mode/off` 现在真的退场了
+
+`mode/off` 原先只有"清场 + 把 `doMobSpawning` 还给原版"，**不设任何停止标志**，而 `core/tick` 里的 `spawn/batch` 没有模式门 —— 跑完 `mode/off` 之后本包仍在 summon 生物。文档（16 / 21 / 24 / 25 与 wiki 安装与升级）一致按"退场"写，代码不是。
+
+| 项 | 改法 |
+|---|---|
+| 新增退场锁 | `$mode.off`（记分板 `doom.nats`） |
+| `core/tick` | `add $t` 之后整函数 return；`$t` 照旧递增（`ctrl/settle` 的分钟结算靠它），不刷怪、不跑快照/容量扫描/despawn |
+| `mode/off` | 置 `$mode.off = 1` |
+| `mode/survival` | 置 `$mode.off = 0`（`mode/auto` 复用 survival，自动获得解锁） |
+| `core/setup` | 装载自动接管加双条件：`unless $mode.manual` **且** `unless $mode.off` —— 否则 `/reload` 会把 `doMobSpawning` 改回 false 而 `core/tick` 仍在 return，原版与本包都不刷怪 |
+
+真机验收（1.21.10）：跑 `mode/off` 后 `$mode.off=1`、`doMobSpawning=true`、`$spawn_t` 连续采样恒 2（冻结）、`$t` 仍递增；`/reload` 后仍冻结且 `doMobSpawning` 仍 true；`mode/survival` 与 `mode/auto` 都能解锁并恢复节拍。
+
+### 5 · 顺带：实验性变体长期漂移
+
+`pack/doom.nats-experimental` 此前**停在上一代产物**：776 文件，与默认变体的 704 个公共文件里有 **251 个内容不同** —— `core/creature_tick` 只有 4 行（旧版）、`mode/off` 5 行、`core/tick` 32 行，全都没有本版的三处修复与退场锁。`DOOM_EXP=1` 下四个生成器 `--check` 直接报漂移。
+
+重建后 **781 文件**（新增 5、删除 0、改动 8），实验层 `exp/*` 仍是 77 个文件不变；12 个生成器 `--check` 全部一致。
+
+### 6 · 四道门
+
+| 门 | 结果 |
+|---|---|
+| 生成器一致 | `gen_pack` / `gen_pos` / `gen_check` / `gen_spawn` 及其他 8 个：默认与实验性都 `--check` 一致 |
+| 静态门 | 默认与实验性均 **0 error / 2 warning**（`check/fail` 与 `debug/light_fail` 的既有"含宏行但无 with 调用"告警） |
+| 泄漏门 | 0 处 |
+| 12 版矩阵 | **12/12 `pass=14 fail=0 total=14`**：1.21.5 / 1.21.6 / 1.21.7 / 1.21.8 / 1.21.9 / 1.21.10 / 1.21.11 / 26.1 / 26.1.1 / 26.1.2 / 26.2 / 26.3，每版加载错误 0，单版 28–32 秒 |
+| 真机生成 | 默认参数下 `$cnt.creature` 与 `@e[type=#doom.nats:creature]` 双口径一致；把 `cap.creature` 抬到 200 后 120 秒生成 96 只、场上 106 只（sheep 20 / cow 12 / pig 28 / chicken 26 / horse 17 / donkey 3），实体 NBT 带 `doom.nats.cat.creature` `doom.nats.near128` `doom.nats.spawned` |
+
+> 判定口径提醒：`$spawned.total` 参与 `ctrl/settle` 的分钟结算，短窗口的差值可能与实际生成数不一致；数生成了几只请读 `$cnt.creature` 或直接点实体。
+
+### 7 · 交付物
+
+| 文件 | 适用版本 | 条目数 |
+|---|---|---|
+| `doom.nats-v4.31.0.zip` | 1.21.6（基线）| 705 |
+| `doom.nats-v4.31.0-mc1.21.5.zip` | 1.21.5 | 705 |
+| `doom.nats-v4.31.0-mc1.21.6-1.21.8.zip` | 1.21.6 到 1.21.8 | 705 |
+| `doom.nats-v4.31.0-mc1.21.9-1.21.10.zip` | 1.21.9 到 1.21.10 | 705 |
+| `doom.nats-v4.31.0-mc1.21.11-26.2.zip` | 1.21.11 到 26.2 | 705 |
+| `doom.nats-v4.31.0-mc26.3.zip` | 26.3 | 705 |
+| `doom.nats-v4x-experimental-v4.31.0.zip` | 实验性变体 | 781 |
+
+每个包都与对应的 `ports/` 目录（基线包与 `pack/doom.nats` + `mcdoc/`）逐字节一致。
+
 ## v4.30.1 · 26.3 那份包的 `pack.mcmeta` 改回真值 — 2026-10-24
 
 > 只改元数据，不改任何行为：`data/` 一个字节没动，5 份区间包的 mcfunction / JSON 与 v4.30.0 完全一致。

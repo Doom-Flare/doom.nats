@@ -109,14 +109,25 @@ $execute positioned \$(px) ~ \$(pz) run function ${NS}:pos/band
 // 自动扫地面：在候选点从「玩家层 +2」往下到 -16，取第一处三层都合法的层。
 // 展开成常量行（不用宏/递归），每层一条命令；命中即把 dy 记进 $band.dy（9999 = 未命中哨兵）。
 const SCAN_TOP = 2, SCAN_BOTTOM = -16, SCAN_MISS = 9999;
-const scanLines = [];
+const anchorLines = [];
 for (let dy = SCAN_TOP; dy >= SCAN_BOTTOM; dy--) {
   const d = String(dy);   // ⚠ 相对坐标只能是 ~N / ~-N；~+N 不合法（实测整函数加载失败）
-  scanLines.push('execute if score $band.mode ' + NS + ' matches 0 if score $band.dy ' + NS + ' matches ' + SCAN_MISS
+  anchorLines.push('execute if score $band.mode ' + NS + ' matches 0 if score $band.dy ' + NS + ' matches ' + SCAN_MISS
     + ' positioned ~ ~' + d + ' ~ if block ~ ~-1 ~ #' + NS + ':standable'
     + ' if block ~ ~ ~ #' + NS + ':spawnable_at if block ~ ~1 ~ #' + NS + ':spawnable_at'
     + ' run scoreboard players set $band.dy ' + NS + ' ' + dy);
 }
+// 19 条玩家层扫描行由 anchorLines 收着，供 pos/band_surface_scan 复用同一份几何
+const scanLines = [];
+for (const line of anchorLines) scanLines.push(line);
+scanLines.push('');
+scanLines.push('# ---- v4.31 第二步：玩家层扫不到 ⇒ 把锚点搬到该列地表再扫 ----');
+scanLines.push('# 原版 getRandomPosWithin：y = random(minY, 该列 WORLD_SURFACE 高度 + 1)，与玩家高度无关。');
+scanLines.push('#   模式 0 的第一个窗口只有「玩家层 +2 .. -16」：玩家飞在高空时整窗都是空气 ⇒ v4.19 的回退把');
+scanLines.push('#   上界抬到玩家层+2，候选点绝大多数落在空气里被 check/block 拒掉（真机：玩家 y=200、午间、90 秒 0 生成）。');
+scanLines.push('# 这一步用 heightmap（motion_blocking_no_leaves，与原版 topEmptyY 同源）把锚点搬到该列地表；');
+scanLines.push('#   只在「地表不高于玩家层」时接管 —— 玩家在洞穴/地下时地表在头顶，仍走下面的整列回退，行为同 v4.30。');
+scanLines.push('execute if score $band.mode ' + NS + ' matches 0 if score $band.dy ' + NS + ' matches ' + SCAN_MISS + ' run function ' + NS + ':pos/band_surface');
 scanLines.push('');
 scanLines.push('# ---- v4.19 回退：扫不到地面时按原版"整列均匀"取 y（[floorY, 玩家层+2]）----');
 scanLines.push('# 为什么需要：原版 y 在 [minY, 地表+1] 整列均匀随机，玩家在海面时整列都是候选 ⇒ 水下十几格照样出溺尸/鱼。');
@@ -187,6 +198,44 @@ F['data/' + NS + '/function/pos/band_fallback.mcfunction'] = `# ${NS}:pos/band_f
 \$execute store result score \$py ${NS} run random value \$(yLo)..\$(yHi)
 scoreboard players set \$band.dy ${NS} 0
 `;
+F['data/' + NS + '/function/pos/band_surface.mcfunction'] = `# ${NS}:pos/band_surface —— 模式 0 第二步：玩家层扫不到时，把锚点搬到该列地表再扫
+#
+# 为什么需要（v4.31）：原版 getRandomPosWithin 的 y = random(minY, 该列 WORLD_SURFACE + 1)，
+#   **与玩家高度完全无关**；模式 0 的第一个窗口只有「玩家层 +2 .. -16」，玩家飞在高空时整窗都是空气，
+#   v4.19 的回退虽把上界抬到玩家层+2，但候选点绝大多数落在空气里被 check/block 拒掉
+#   （真机：玩家 y=200、午间、90 秒 0 生成；玩家 y=64 也是 0，而同条件纯原版刷了 12 只）。
+# 这里用 heightmap（motion_blocking_no_leaves，与 ON_GROUND 落位判据所用 heightmap 同源）
+#   把锚点搬到候选列的真实地表，再复用玩家层那同一份 19 层几何往下扫。
+# 只在「地表低于玩家层」时接管：玩家在洞穴/地下时地表在头顶，跳过本步、落回 v4.19 的整列回退，行为同 v4.30。
+# 前置：执行位置已由 pos/band_at 定为 (px, 玩家y, pz)。
+execute if score $band.dy ${NS} matches ${SCAN_MISS} if loaded ~ ~ ~ positioned over motion_blocking_no_leaves run function ${NS}:pos/band_surface_at
+`;
+
+F['data/' + NS + '/function/pos/band_surface_at.mcfunction'] = `# ${NS}:pos/band_surface_at —— 在 heightmap 定位好的执行位置上读回地表 y，再决定是否接管
+#
+# 执行位置由 pos/band_surface 的 positioned over 定为「该列最高的 motion_blocking_no_leaves 方块之上一格」，
+#   与 chunk.getHeight(WORLD_SURFACE, x, z) 同值（真机实测：草方块在 -61 的一列取到 -60）。
+# 读回绝对 y 只能借一个临时 marker：命令没有「把执行位置写进记分板」的形式，
+#   而 data get entity @s Pos[1] 读的始终是实体位置（@s 仍是玩家，不是执行位置）。
+# 先垫 2147483647 再读：万一 marker 没生成，store result 不落笔，sy 保持极大值 ⇒ 下面的 < 判定不成立 ⇒ 干净跳过。
+scoreboard players set $band.sy ${NS} 2147483647
+summon minecraft:marker ~ ~ ~ {Tags:["${NS}.hm"]}
+execute as @e[type=minecraft:marker,tag=${NS}.hm,limit=1,sort=nearest] store result score $band.sy ${NS} run data get entity @s Pos[1]
+kill @e[type=minecraft:marker,tag=${NS}.hm]
+# 地表低于玩家层才接管；玩家在洞穴里（地表在头顶）跳过，保持 v4.30 的整列回退
+execute if score $band.sy ${NS} < $py ${NS} run function ${NS}:pos/band_surface_scan
+`;
+
+F['data/' + NS + '/function/pos/band_surface_scan.mcfunction'] = `# ${NS}:pos/band_surface_scan —— 以该列地表为锚点的 19 层扫描（几何与玩家层那 19 条逐字相同）
+#
+# 命中时 $band.dy 记的是「相对地表的偏移」，与玩家层扫描的语义不同：这里要换算成绝对 y 写回 $py，
+#   再把 $band.dy 归 0，让 pos/band 末尾那句 operation $py += $band.dy 成为空操作（与 band_fallback 同构）。
+${anchorLines.join(LF)}
+execute unless score $band.dy ${NS} matches ${SCAN_MISS} run scoreboard players operation $py ${NS} = $band.sy ${NS}
+execute unless score $band.dy ${NS} matches ${SCAN_MISS} run scoreboard players operation $py ${NS} += $band.dy ${NS}
+execute unless score $band.dy ${NS} matches ${SCAN_MISS} run scoreboard players set $band.dy ${NS} 0
+`;
+
 
 F['data/' + NS + '/function/pos/band_uniform.mcfunction'] = `# ${NS}:pos/band_uniform [MACRO] —— 模式 3：在 [yMin, yMax] 内均匀取 y
 # 用法：function ${NS}:pos/band_uniform with storage ${NS}:band

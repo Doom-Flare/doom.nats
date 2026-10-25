@@ -19,7 +19,7 @@ First keep two things apart — this is also the thing most people ask about:
 
 | Location | What it is | For whom |
 |---|---|---|
-| [`dist/`](../dist) | **Finished product**: `doom.nats-v4.30.1.zip` (default variant) + `doom.nats-v4x-experimental-v4.30.1.zip` (experimental variant); checksums in `dist/SHA256SUMS.txt` | Players who only want to install it into a world — **this is probably all you need** |
+| [`dist/`](../dist) | **Finished product**: `doom.nats-v4.31.0.zip` (default variant) + `doom.nats-v4x-experimental-v4.31.0.zip` (experimental variant); checksums in `dist/SHA256SUMS.txt` | Players who only want to install it into a world — **this is probably all you need** |
 | `src/` (this directory) | **Source**: generators + rule layer + generation inputs. **It cannot be dropped into a world directly**; you have to run the generators first to turn it into `pack/` | People who want to modify the pack, and people who want to know "how it actually computes things" |
 
 ## Three-Step Build
@@ -112,11 +112,11 @@ File counts in each place:
 
 | Location | File count |
 |---|---|
-| `pack/doom.nats` (generator artifacts) | 700 |
-| `pack/doom.nats-experimental` (experimental) | 777 |
-| `dist/doom.nats-v4.30.1.zip` | 700 |
-| `dist/doom.nats-v4x-experimental-v4.30.1.zip` | 777 |
-| the repo top-level [`doom.nats/`](../doom.nats) | 700 |
+| `pack/doom.nats` (generator artifacts) | 704 |
+| `pack/doom.nats-experimental` (experimental) | 781 |
+| `dist/doom.nats-v4.31.0.zip` | 705 |
+| `dist/doom.nats-v4x-experimental-v4.31.0.zip` | 781 |
+| the repo top-level [`doom.nats/`](../doom.nats) | 705 |
 
 The repo top-level `doom.nats/` is **identical item by item** to the zips (0 missing, 0 extra, 0 with different content), and likewise identical to `ports/doom.nats-1.21.6-1.21.8`.
 - For the sha256 of both zips see [`dist/SHA256SUMS.txt`](../dist/SHA256SUMS.txt).

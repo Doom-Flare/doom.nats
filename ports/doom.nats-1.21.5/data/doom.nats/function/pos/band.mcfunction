@@ -49,6 +49,14 @@ execute if score $band.mode doom.nats matches 0 if score $band.dy doom.nats matc
 execute if score $band.mode doom.nats matches 0 if score $band.dy doom.nats matches 9999 positioned ~ ~-15 ~ if block ~ ~-1 ~ #doom.nats:standable if block ~ ~ ~ #doom.nats:spawnable_at if block ~ ~1 ~ #doom.nats:spawnable_at run scoreboard players set $band.dy doom.nats -15
 execute if score $band.mode doom.nats matches 0 if score $band.dy doom.nats matches 9999 positioned ~ ~-16 ~ if block ~ ~-1 ~ #doom.nats:standable if block ~ ~ ~ #doom.nats:spawnable_at if block ~ ~1 ~ #doom.nats:spawnable_at run scoreboard players set $band.dy doom.nats -16
 
+# ---- v4.31 第二步：玩家层扫不到 ⇒ 把锚点搬到该列地表再扫 ----
+# 原版 getRandomPosWithin：y = random(minY, 该列 WORLD_SURFACE 高度 + 1)，与玩家高度无关。
+#   模式 0 的第一个窗口只有「玩家层 +2 .. -16」：玩家飞在高空时整窗都是空气 ⇒ v4.19 的回退把
+#   上界抬到玩家层+2，候选点绝大多数落在空气里被 check/block 拒掉（真机：玩家 y=200、午间、90 秒 0 生成）。
+# 这一步用 heightmap（motion_blocking_no_leaves，与原版 topEmptyY 同源）把锚点搬到该列地表；
+#   只在「地表不高于玩家层」时接管 —— 玩家在洞穴/地下时地表在头顶，仍走下面的整列回退，行为同 v4.30。
+execute if score $band.mode doom.nats matches 0 if score $band.dy doom.nats matches 9999 run function doom.nats:pos/band_surface
+
 # ---- v4.19 回退：扫不到地面时按原版"整列均匀"取 y（[floorY, 玩家层+2]）----
 # 为什么需要：原版 y 在 [minY, 地表+1] 整列均匀随机，玩家在海面时整列都是候选 ⇒ 水下十几格照样出溺尸/鱼。
 #   模式 0 只在「玩家层 +2 .. -16」里扫地面：玩家浮在**深水**上方时这一窗口内没有任何可站立方块

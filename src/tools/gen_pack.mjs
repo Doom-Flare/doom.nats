@@ -96,7 +96,9 @@ function ${NS}:author/load${PKG.EXP ? `
 function ${NS}:exp/load` : ''}
 
 # 生存直用：装载即接管原版自然生成（不想让本包动 gamerule，就先执行一次 doom.nats:mode/manual）
-execute unless score $mode.manual ${NS} matches 1 run function ${NS}:mode/survival
+# 已退场（$mode.off=1）时不再自动接管 —— 否则 reload 会把 doMobSpawning 改回 false、而 core/tick 仍在 return，
+# 结果原版与本包都不刷怪。解除退场用 mode/survival 或 mode/auto。
+execute unless score $mode.manual ${NS} matches 1 unless score $mode.off ${NS} matches 1 run function ${NS}:mode/survival
 # ⚠ doom.log:info 是宏入口：code 与 message **两个键都必须写**，缺一个 ⇒ 整个函数体被静默放弃
 #   （引擎行为，本项目已钉；编号段见 doom.log 的编码约定 —— E1xx = 配置/加载期）
 function doom.log:info {code:"E101", message:"${NS} v4 就绪（自然生成复刻）"}
@@ -335,6 +337,14 @@ $say [density] 目标/分钟=$(density) 上一分钟=$(perMin) batch=$(batch) pe
 `;
 F['data/' + NS + '/function/core/tick.mcfunction'] = `# ${NS}:core/tick —— 每 tick
 scoreboard players add $t ${NS} 1
+# ★ 退场锁（v4.31）：mode/off 之后本包必须真的停手 —— v4.30.1 及更早没有这道门，
+#   跑完 mode/off 仍在 spawn/batch 里 summon，与文档声称的「退场」不符。
+#   $t 照旧递增（ctrl/settle 的分钟结算靠它），其余整函数 return：不刷怪、不跑快照/容量扫描/despawn。
+#   解锁：mode/survival 或 mode/auto 把 $mode.off 置 0（core/setup 也只在未退场时自动接管）。
+execute if score $mode.off ${NS} matches 1 run return 0
+# v4.31 P0 修：被动生物节拍从 circ/snapshot（每 20 tick）挪到每 tick —— 旧的采样相位固定，
+#   \`gametime % 400\` 永远取不到 0（真机实测恒落在 {17,37,57,…,397}），creature 全程不生成。
+function ${NS}:core/creature_tick
 
 # 快照节拍：默认 20 tick 一次（$snap_period 可覆盖）
 execute unless score $snap_period ${NS} matches 1.. run scoreboard players set $snap_period ${NS} 20
@@ -428,9 +438,9 @@ execute if score $snap.phase ${NS} matches 6 run scoreboard players set $snap.mo
 execute if score $snap.phase ${NS} matches 7 run scoreboard players set $snap.moon ${NS} 6
 # 7. 被动生物节拍：源码判定 **gameTime** % 400 == 0（ServerChunkCache.tickChunks）
 #    v4.14 修正：早期版本用 time query daytime —— 那是"一天内的时刻"，在 doDaylightCycle=false 或 /time set 之后
-#    会与 gameTime 脱钩，导致被动生物节拍卡死。现在用 time query gametime（core/creature_tick）。
-function ${NS}:core/creature_tick
-scoreboard players operation $creature_gate ${NS} = $gt ${NS}
+#    会与 gameTime 脱钩，导致被动生物节拍卡死。现在用 time query gametime。
+#    v4.31 修正：这一拍**已挪到 core/tick 每 tick 执行**（见 core/creature_tick 的头注释）。这里不再采样：
+#    20 tick 才采一次会让 gametime%-400 的相位固定，永远取不到 0。$creature_gate 也随之删除（全包 0 处读取）。
 `;
 
 // ---------------------------------------------------------------- 维度探测（v4.14）
@@ -560,6 +570,8 @@ tellraw @a [{"text":"[nats.env] ","color":"dark_gray"},{"text":"players=","color
 F['data/' + NS + '/function/mode/survival.mcfunction'] = `# ${NS}:mode/survival —— 生存直用：接管原版自然生成（装载时默认执行）
 gamerule doMobSpawning false
 scoreboard players set $mode.manual ${NS} 0
+# 解除退场锁（core/tick 靠 $mode.off 整函数 return）
+scoreboard players set $mode.off ${NS} 0
 function ${NS}:circ/snapshot
 say [nats] mode/survival —— 已接管自然生成（doMobSpawning=false）
 `;
@@ -569,10 +581,14 @@ scoreboard players set $mode.manual ${NS} 1
 say [nats] mode/manual —— 本包不再自动改 doMobSpawning（请自行确认原版自然生成已关，否则会双份刷怪）
 `;
 
-F['data/' + NS + '/function/mode/off.mcfunction'] = `# ${NS}:mode/off —— 退场：静默清掉本包生物，并把原版自然生成还回去
+F['data/' + NS + '/function/mode/off.mcfunction'] = `# ${NS}:mode/off —— 退场：静默清掉本包生物，本包停止刷怪，并把原版自然生成还回去
+# ★ \`$mode.off\` 是退场锁：core/tick 第 3 行靠它整函数 return。
+#   v4.30.1 及更早没有这把锁 —— 跑完 mode/off 之后本包仍在 spawn/batch 里 summon 生物，
+#   与文档（16/21/24/25 与 wiki 安装与升级）声称的「退场」不符。解锁用 mode/survival 或 mode/auto。
 function ${NS}:debug/clear
+scoreboard players set $mode.off ${NS} 1
 gamerule doMobSpawning true
-say [nats] mode/off —— 已静默清场并把自然生成还给原版
+say [nats] mode/off —— 已静默清场，本包停止刷怪，并把自然生成还给原版（重新接管用 mode/survival）
 `;
 
 F['data/' + NS + '/function/mode/auto.mcfunction'] = `# ${NS}:mode/auto —— 恢复默认（装载时自动接管）

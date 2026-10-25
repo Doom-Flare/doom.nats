@@ -59,6 +59,6 @@ execute if score $snap.phase doom.nats matches 6 run scoreboard players set $sna
 execute if score $snap.phase doom.nats matches 7 run scoreboard players set $snap.moon doom.nats 6
 # 7. 被动生物节拍：源码判定 **gameTime** % 400 == 0（ServerChunkCache.tickChunks）
 #    v4.14 修正：早期版本用 time query daytime —— 那是"一天内的时刻"，在 doDaylightCycle=false 或 /time set 之后
-#    会与 gameTime 脱钩，导致被动生物节拍卡死。现在用 time query gametime（core/creature_tick）。
-function doom.nats:core/creature_tick
-scoreboard players operation $creature_gate doom.nats = $gt doom.nats
+#    会与 gameTime 脱钩，导致被动生物节拍卡死。现在用 time query gametime。
+#    v4.31 修正：这一拍**已挪到 core/tick 每 tick 执行**（见 core/creature_tick 的头注释）。这里不再采样：
+#    20 tick 才采一次会让 gametime%-400 的相位固定，永远取不到 0。$creature_gate 也随之删除（全包 0 处读取）。
