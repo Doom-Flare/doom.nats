@@ -6,7 +6,7 @@ The experimental variant = the default variant + capabilities beyond vanilla (on
 
 ## 1. Download and Installation
 
-1. Download `dist/doom.nats-v4x-experimental-v4.31.0.zip`
+1. Download `dist/doom.nats-v4x-experimental-v4.32.0.zip`
 2. Unzip, put `doom.nats/` into `<save>/datapacks/` (on a server `world/datapacks/`)
 3. Create a new world (or edit the enabled experimental gameplay in `level.dat`), and turn on the corresponding experimental gameplay switch
 4. `/reload`

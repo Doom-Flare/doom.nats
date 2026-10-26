@@ -19,7 +19,7 @@ English: `src/README.en.md`
 
 | 位置 | 是什么 | 给谁 |
 |---|---|---|
-| [`dist/`](../dist) | **成品**：`doom.nats-v4.31.0.zip`（默认变体）+ `doom.nats-v4x-experimental-v4.31.0.zip`（实验性变体），校验值见 `dist/SHA256SUMS.txt` | 只想装进存档玩的玩家 —— **你多半只要这个** |
+| [`dist/`](../dist) | **成品**：`doom.nats-v4.32.0.zip`（默认变体）+ `doom.nats-v4x-experimental-v4.32.0.zip`（实验性变体），校验值见 `dist/SHA256SUMS.txt` | 只想装进存档玩的玩家 —— **你多半只要这个** |
 | `src/`（本目录） | **源码**：生成器 + 规则层 + 生成输入。**不能直接丢进存档**，要先跑生成器变成 `pack/` | 想改包的人、想知道"它到底怎么算的"的人 |
 
 ## 三步构建
@@ -114,8 +114,8 @@ node src/tools/check_static.mjs          # 默认 + 实验性两个变体；只�
 |---|---|
 | `pack/doom.nats`（生成器产物）| 704 |
 | `pack/doom.nats-experimental`（实验性）| 781 |
-| `dist/doom.nats-v4.31.0.zip` | 705 |
-| `dist/doom.nats-v4x-experimental-v4.31.0.zip` | 781 |
+| `dist/doom.nats-v4.32.0.zip` | 705 |
+| `dist/doom.nats-v4x-experimental-v4.32.0.zip` | 781 |
 | 仓库顶层的 [`doom.nats/`](../doom.nats) | 705 |
 
 仓库顶层的 `doom.nats/` 与 zip **逐项一致**（0 缺 0 多 0 内容不同），与 `ports/doom.nats-1.21.6-1.21.8` 也一致。

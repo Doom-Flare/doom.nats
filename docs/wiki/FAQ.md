@@ -13,8 +13,8 @@ English: `docs/wiki/FAQ.en.md`
 
 ## 需要开实验性玩法吗？
 
-默认变体不需要（`doom.nats-v4.31.0.zip`）。
-只有实验性变体需要（`doom.nats-v4x-experimental-v4.31.0.zip`），而且必须在创建世界时开，否则包被拒绝加载。见 [[实验性变体-v4x]]。
+默认变体不需要（`doom.nats-v4.32.0.zip`）。
+只有实验性变体需要（`doom.nats-v4x-experimental-v4.32.0.zip`），而且必须在创建世界时开，否则包被拒绝加载。见 [[实验性变体-v4x]]。
 
 ## 单人游戏里站着不动，怎么不刷怪？
 

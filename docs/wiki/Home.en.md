@@ -10,8 +10,8 @@ By default nothing is changed, so it equals vanilla. This is a contract verified
 
 | Download this | What it is | Who it suits |
 |---|---|---|
-| [doom.nats-v4.31.0.zip](https://github.com/Doom-Flare/doom.nats/releases/download/v4.31.0/doom.nats-v4.31.0.zip) | Default variant: item-by-item replication of vanilla natural spawning | Most people (recommended) |
-| [doom.nats-v4x-experimental-v4.31.0.zip](https://github.com/Doom-Flare/doom.nats/releases/download/v4.31.0/doom.nats-v4x-experimental-v4.31.0.zip) | Everything in the default variant + capabilities beyond vanilla (only spawn when something is nearby, spawn effects, preset packs) | People who want to play with more, and are willing to enable the matching experimental gameplay when creating the world |
+| [doom.nats-v4.32.0.zip](https://github.com/Doom-Flare/doom.nats/releases/download/v4.32.0/doom.nats-v4.32.0.zip) | Default variant: item-by-item replication of vanilla natural spawning | Most people (recommended) |
+| [doom.nats-v4x-experimental-v4.32.0.zip](https://github.com/Doom-Flare/doom.nats/releases/download/v4.32.0/doom.nats-v4x-experimental-v4.32.0.zip) | Everything in the default variant + capabilities beyond vanilla (only spawn when something is nearby, spawn effects, preset packs) | People who want to play with more, and are willing to enable the matching experimental gameplay when creating the world |
 | [All downloads / checksums](https://github.com/Doom-Flare/doom.nats/releases) | sha256 attachments of both zips | People who want to confirm the download is complete |
 
 > The experimental variant carries an engine gate: if the world has not enabled the matching experimental gameplay, it will not install (not a warning). See [[实验性变体-v4x]].
@@ -20,7 +20,7 @@ By default nothing is changed, so it equals vanilla. This is a contract verified
 
 ## Install in Three Steps
 
-1. Unzip `doom.nats-v4.31.0.zip` to get a `doom.nats/` folder
+1. Unzip `doom.nats-v4.32.0.zip` to get a `doom.nats/` folder
 2. Drop the whole `doom.nats/` into `<save>/datapacks/` (on a server: `world/datapacks/`)
 3. Go in game and run `/reload`
 

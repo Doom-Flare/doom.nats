@@ -12,6 +12,75 @@ English: `CHANGELOG.en.md`
 
 ---
 
+## v4.32.0 · 条目路径的四处断链 + place=any 放行落位门 — 2026-10-25
+
+> 四处都是"代码在写、但从没跑通"的链路：作者层的条目一直在**读一份空注册表**、**抛一条执行期错误**、**把第 9 条吃进去又不扫描**。
+> 它们不报错、不进日志、不影响普通刷怪，所以从 v4.25 起活了七个版本，只有亲手写条目的人才会撞上。
+> 另把 `place = any` 从"只是不检查地面"正式定义成"同时放行 tag 门与 `belowSurface` 高度门"，蝙蝠/鹦鹉因此第一次能真正生成在空中。
+
+### 1 · 错在哪
+
+| # | 位置 | 原写法 | 实际后果 |
+|---|---|---|---|
+| A | `author/entry_rule:3` | `... set from storage doom.nats:mobs."$(slug)".rt` —— storage id 与路径的引号段之间少一个空格 | 整行抛 `Expected whitespace to end one argument, but found trailing data at position 77`，宏在实例化时就失败 ⇒ 条目的 `rule` / `tag` / `cluster` / `wide` / `wide2` / `tall` / `grp1` **七项全部沿用上一只生物的残值**，只有 `place` / `light` 生效 |
+| B | `core/setup` | 从未调用 `mob/load` | 全包 47 条注册表（`doom.nats:mobs`）**只在你手动 `function doom.nats:mob/load` 之后才存在**；新世界 / 新装包时它是空的，A 那条即便修好也无处可取 |
+| C | `author/add_entry:8-9` | 满溢判定与 append 都看 `entries[8]` | 上限声明是 8，实际能写进 **9** 条；而 `entry_scan_<cat>` 只枚举 `entries[0..7]` ⇒ 第 9 条**永不生效且不报错** |
+| D | `check/block:86-97` | 十二条 tag 门只判 `$sel.tag`，不看 `$sel.place` | 把物种的 `place` 改成 `any` 只免除"脚下必须有方块"，tag 门照样杀掉 ⇒ **蝙蝠 / 鹦鹉写 `place:"any"` 仍然进不了空中** |
+
+### 2 · 改了什么
+
+1. `src/tools/lib/author-runtime.mjs` —— `entry_rule` 的 storage 路径补上空格；`add_entry` 两处 `entries[8]` 改成 `entries[CAP_TAGS-1]`（= `entries[7]`）；`entry_take` 在 `$sel.ok = 1` / `$sel.hit = 1` 之后补九条默认值（`rule=0 place=1 light=0 tag=0 grp1=0 cluster=1 wide=0 wide2=0 tall=0`），roster 之外的实体（悦灵 / 幻翼等）不再吃上一只的残值。
+2. `src/tools/gen_pack.mjs` —— 生成的 `core/setup` 在 `circ/snapshot` 之后加 `function doom.nats:mob/load`，注册表随包装载。
+3. `src/tools/gen_check.mjs` —— 十二条 tag 门各加 `unless score $sel.place doom.nats matches 1`；`belowSurface` 高度门同样加 `unless ... matches 1`。⇒ `place = any` 同时放行两道门。
+4. `src/tools/lint_pack.mjs` —— 新增 **L16**：`storage <ns>:<path>` 与紧随其后的引号段之间缺空格即报 ERROR。缺陷 A 这个形态从此进不了门禁。
+5. `author/help` 增加一行提示，说明 `place = any` 的双重含义。
+
+### 3 · 为什么四条只在写条目时才显形
+
+默认参数下整条生成链走的是 `spawn/pick_one` → `check/all` → `spawn/emit_vanilla` → `post/<slug>`，全程不碰 `doom.nats:mobs` 与 `author/*`。作者层的入口是 `spawn/emit:19` 的 `author/hit` 分支，只有 `doom.nats:author.entries` 非空时才走。所以：普通玩家装 v4.31 一切正常，写条目的服主看到的是一套"能刷出东西、但规则全不对"的假象。
+
+### 4 · 真机对照（同一台 1.21.6 服，同一条目，`mode/off` 冻结主链后读 `$sel`）
+
+| 探针 | v4.31.0 | v4.32.0 |
+|---|---|---|
+| `entry_take` 后 `$sel` | `{rule:5, place:0, light:1, tag:0, cluster:4}` —— 五项全是残值 | `{rule:3, place:4, light:3, tag:12, cluster:4}` —— 蝙蝠真值 |
+| `add_entry` 连写 10 次的 `entries` 长度 | `1,2,3,4,5,6,7,8,9,9` | `1,2,3,4,5,6,7,8,8,8` |
+| 删掉 `doom.nats:mobs.minecraft:bat` 后 `/reload` | 仍是空 | 自动装回（`cluster:4 wide2:0 wide:0 light:3 rule:3 place:4 tag:12 tall:0 grp1:0`）|
+| 本包加载错误 / 自检 | 0 / 14 | 0 / 14 |
+
+### 5 · 空中的那次决定性验收
+
+同一台 1.21.10 服，y=199 铺整层 barrier、玩家钉在 y=200、`band {mode:1, yMin:205, yMax:225}`、两条条目（蝙蝠 ambient / 鹦鹉 creature，weight 各 400000）、两者 `entityRules` 都写 `{place:"any", light:"none"}`：
+
+- 90 秒：`$cnt.ambient` 48 → **177**，`$cnt.creature` 2 → 4；客户端可见蝙蝠 32 → 83
+- 蝙蝠实体 `Pos [3.28, 161.04, -5.66]`、Tag 含 `doom.nats.author.a1`；鹦鹉 `Pos [28.00, 204.89, 112.00]`、Tag 含 `doom.nats.author.a2` —— **两只都在空中**
+- 同一场景下 v4.31.0 写 `place:"any"` 的蝙蝠一只都出不来（被 tag 门杀在 reason=4）
+
+### 6 · 门禁与验收
+
+| 门 | 结果 |
+|---|---|
+| 生成器漂移 | `gen_check` / `gen_pack` / `gen_mobs` / `gen_author` 全部 `--check` 一致 |
+| 静态门 | `lint_pack` 0 error / 2 warning（既有两条"含宏行但无 with 调用"）；`check_static --std` / `--exp` 同 |
+| 泄漏门 | 0 处 |
+| 12 版矩阵 | **12/12 `pass=14 fail=0 total=14`**：1.21.5 / 1.21.6 / 1.21.7 / 1.21.8 / 1.21.9 / 1.21.10 / 1.21.11 / 26.1 / 26.1.1 / 26.1.2 / 26.2 / 26.3，每版加载错误 0，单版 36.6–38.7 秒 |
+| 全新世界开箱 | 删 `world` 三件套、datapacks 只放一个 zip：开机即 `doMobSpawning=false`、注册表已装载；白天 60 秒 creature 12 只、夜里 120 秒 monster 41–59 只、最近生物距玩家 24.4 格 |
+| 数量档位 | `scale` 五档逐档实测 `sparse 5/35 · normal 10/70 · dense 15/105 · horde 25/175 · extreme 40/280`（creature/monster 上限） |
+
+### 7 · 交付物
+
+| 文件 | 适用版本 | 条目数 |
+|---|---|---|
+| `doom.nats-v4.32.0.zip` | 1.21.6（基线）| 705 |
+| `doom.nats-v4.32.0-mc1.21.5.zip` | 1.21.5 | 705 |
+| `doom.nats-v4.32.0-mc1.21.6-1.21.8.zip` | 1.21.6 到 1.21.8 | 705 |
+| `doom.nats-v4.32.0-mc1.21.9-1.21.10.zip` | 1.21.9 到 1.21.10 | 705 |
+| `doom.nats-v4.32.0-mc1.21.11-26.2.zip` | 1.21.11 到 26.2 | 705 |
+| `doom.nats-v4.32.0-mc26.3.zip` | 26.3 | 705 |
+| `doom.nats-v4x-experimental-v4.32.0.zip` | 实验性变体 | 781 |
+
+每个包都与对应的 `ports/` 目录（基线包与 `pack/doom.nats` + `mcdoc/`）逐字节一致。
+
 ## v4.31.0 · 空中生成的两个漏写 + 被动生物永不为零的门 — 2026-10-25
 
 > 三处改动都在生成链的几何与节拍上：距离门不分类别、锚点跟着玩家高度、被动生物的 400 tick 门永远取不到 0。

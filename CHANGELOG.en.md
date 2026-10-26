@@ -13,6 +13,75 @@
 
 ---
 
+## v4.32.0 · Four broken links on the entry path, and place=any opening the placement gates — 2026-10-25
+
+> All four are links that code was writing but that never actually ran: the author layer kept **reading an empty registry**, **throwing one execution-time error**, and **accepting a 9th entry it never scans**.
+> They raise nothing, log nothing, and leave ordinary spawning untouched, so they survived seven versions since v4.25 — only people who wrote entries by hand ever hit them.
+> `place = any` also stops meaning "skip the ground check" and is now formally defined as bypassing both the tag gate and the `belowSurface` height gate, which is what finally lets bat and parrot spawn in the air.
+
+### 1 · What was wrong
+
+| # | Location | Original | Actual effect |
+|---|---|---|---|
+| A | `author/entry_rule:3` | `... set from storage doom.nats:mobs."$(slug)".rt` — one space missing between the storage id and the quoted path segment | The whole line throws `Expected whitespace to end one argument, but found trailing data at position 77` and the macro fails while instantiating ⇒ an entry's `rule` / `tag` / `cluster` / `wide` / `wide2` / `tall` / `grp1` **all carry over from the previous mob**; only `place` / `light` took effect |
+| B | `core/setup` | never called `mob/load` | The 47-entry registry (`doom.nats:mobs`) **only existed if you ran `function doom.nats:mob/load` by hand**; on a fresh world or fresh install it was empty, so even a fixed A had nothing to read |
+| C | `author/add_entry:8-9` | both the fullness check and the append looked at `entries[8]` | The stated cap is 8, but **9** entries could be written; `entry_scan_<cat>` only enumerates `entries[0..7]` ⇒ the 9th **never applied and never reported** |
+| D | `check/block:86-97` | the twelve tag gates only looked at `$sel.tag`, never `$sel.place` | Setting a mob's `place` to `any` only removed "must have a block underfoot" — the tag gate still killed it ⇒ **bat / parrot with `place:"any"` still could not spawn in the air** |
+
+### 2 · What changed
+
+1. `src/tools/lib/author-runtime.mjs` — the space restored in `entry_rule`'s storage path; both `entries[8]` occurrences in `add_entry` turned into `entries[CAP_TAGS-1]` (= `entries[7]`); `entry_take` now writes nine defaults (`rule=0 place=1 light=0 tag=0 grp1=0 cluster=1 wide=0 wide2=0 tall=0`) right after `$sel.ok = 1` / `$sel.hit = 1`, so mobs outside the roster (allay, phantom, …) no longer inherit the previous mob's values.
+2. `src/tools/gen_pack.mjs` — the generated `core/setup` now calls `function doom.nats:mob/load` after `circ/snapshot`, so the registry ships with the pack.
+3. `src/tools/gen_check.mjs` — each of the twelve tag gates gains `unless score $sel.place doom.nats matches 1`; the `belowSurface` height gate gains the same guard. ⇒ `place = any` opens both gates.
+4. `src/tools/lint_pack.mjs` — new rule **L16**: a missing space between `storage <ns>:<path>` and the quoted segment that follows is an ERROR. The shape behind defect A can no longer pass the gate.
+5. `author/help` gains one line explaining what `place = any` really does.
+
+### 3 · Why these four only show up when you write entries
+
+With default settings the spawn chain runs `spawn/pick_one` → `check/all` → `spawn/emit_vanilla` → `post/<slug>` and never touches `doom.nats:mobs` or `author/*`. The author layer is reached through the `author/hit` branch at `spawn/emit:19`, and only when `doom.nats:author.entries` is non-empty. So a plain player on v4.31 sees nothing wrong, while a server owner writing entries sees mobs spawning with entirely wrong rules.
+
+### 4 · Real-hardware comparison (same 1.21.6 server, same entry, `$sel` read after `mode/off` freezes the main chain)
+
+| Probe | v4.31.0 | v4.32.0 |
+|---|---|---|
+| `$sel` after `entry_take` | `{rule:5, place:0, light:1, tag:0, cluster:4}` — five values, all leftovers | `{rule:3, place:4, light:3, tag:12, cluster:4}` — the real bat values |
+| `entries` length after ten `add_entry` calls | `1,2,3,4,5,6,7,8,9,9` | `1,2,3,4,5,6,7,8,8,8` |
+| After deleting `doom.nats:mobs.minecraft:bat` and `/reload` | still empty | restored automatically (`cluster:4 wide2:0 wide:0 light:3 rule:3 place:4 tag:12 tall:0 grp1:0`) |
+| Pack load errors / selftest | 0 / 14 | 0 / 14 |
+
+### 5 · The decisive air-spawn run
+
+Same 1.21.10 server: a full barrier layer at y=199, the player pinned at y=200, `band {mode:1, yMin:205, yMax:225}`, two entries (bat ambient / parrot creature, weight 400000 each), both with `entityRules` set to `{place:"any", light:"none"}`:
+
+- 90 seconds: `$cnt.ambient` 48 → **177**, `$cnt.creature` 2 → 4; the client saw bats go from 32 to 83
+- Bat `Pos [3.28, 161.04, -5.66]` tagged `doom.nats.author.a1`; parrot `Pos [28.00, 204.89, 112.00]` tagged `doom.nats.author.a2` — **both genuinely in the air**
+- On the same scene under v4.31.0, a bat with `place:"any"` never appeared at all (killed by the tag gate, reason=4)
+
+### 6 · Gates and acceptance
+
+| Gate | Result |
+|---|---|
+| Generator drift | `gen_check` / `gen_pack` / `gen_mobs` / `gen_author` all consistent under `--check` |
+| Static | `lint_pack` 0 error / 2 warning (the two pre-existing "macro line without a `with` call"); `check_static --std` / `--exp` the same |
+| Leak | 0 |
+| 12-version matrix | **12/12 `pass=14 fail=0 total=14`**: 1.21.5 / 1.21.6 / 1.21.7 / 1.21.8 / 1.21.9 / 1.21.10 / 1.21.11 / 26.1 / 26.1.1 / 26.1.2 / 26.2 / 26.3, zero load errors each, 36.6–38.7 s per version |
+| Fresh world, out of the box | `world` triple deleted, one zip in `datapacks`: `doMobSpawning=false` on login, registry already loaded; daytime 60 s gave creature 12, night 120 s gave monster 41–59, nearest mob 24.4 blocks from the player |
+| Quantity presets | all five `scale` presets measured: `sparse 5/35 · normal 10/70 · dense 15/105 · horde 25/175 · extreme 40/280` (creature/monster caps) |
+
+### 7 · Artifacts
+
+| File | Applies to | Entries |
+|---|---|---|
+| `doom.nats-v4.32.0.zip` | 1.21.6 (baseline) | 705 |
+| `doom.nats-v4.32.0-mc1.21.5.zip` | 1.21.5 | 705 |
+| `doom.nats-v4.32.0-mc1.21.6-1.21.8.zip` | 1.21.6 to 1.21.8 | 705 |
+| `doom.nats-v4.32.0-mc1.21.9-1.21.10.zip` | 1.21.9 to 1.21.10 | 705 |
+| `doom.nats-v4.32.0-mc1.21.11-26.2.zip` | 1.21.11 to 26.2 | 705 |
+| `doom.nats-v4.32.0-mc26.3.zip` | 26.3 | 705 |
+| `doom.nats-v4x-experimental-v4.32.0.zip` | Experimental variant | 781 |
+
+Every archive is byte-identical to its `ports/` directory (the baseline also matches `pack/doom.nats` + `mcdoc/`).
+
 ## v4.31.0 · Two missing checks in air spawning, and a gate that could never hit zero — 2026-10-25
 
 > All three changes sit on the geometry and the cadence of the spawn chain: the distance gate ignored categories, the anchor followed the player's height, and the passive-mob 400-tick gate could never reach zero.
